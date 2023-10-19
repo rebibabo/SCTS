@@ -3,12 +3,14 @@ from utils import replace_from_blob, traverse_rec_func
 '''==========================匹配========================'''
 def rec_ForIter(node):
     # for i in x:
-    if node.type == 'for_statement' and node.children[3].type != 'call' and node.children[3].children[0].text != b'range':
+    if node.type == 'for_statement' and node.children[3].type != 'call' \
+        and len(node.children[3].children) > 0 and node.children[3].children[0].text != b'range':
         return True
 
 def rec_ForRange(node):
     # for i in range(a, b):
-    if node.type == 'for_statement' and node.children[3].type == 'call' and node.children[3].children[0].text == b'range':
+    if node.type == 'for_statement' and node.children[3].type == 'call' \
+        and len(node.children[3].children) > 0 and node.children[3].children[0].text == b'range':
         return True
 
 '''==========================替换========================'''
@@ -29,6 +31,7 @@ def cvt_AddEnumerate(node):
             return ret
 
 def cvt_ForRange2While(node):
+    # for i in range() -> while
     if rec_ForRange(node):
         iter = node.children[1].text.decode('utf-8')
         while_lines = node.parent.parent.text.decode('utf-8').split('\n')

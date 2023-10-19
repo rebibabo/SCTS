@@ -2,7 +2,7 @@ from utils import replace_from_blob, traverse_rec_func
 
 '''==========================匹配========================'''
 def rec_CallPrintWithFlush(node):
-    # 是否是print()且不是print(args, flush=True)
+    # 是否是print(args, flush=True)
     if node.type == 'call':
         func = node.child_by_field_name('function')
         if func.text == b'print':
@@ -29,7 +29,7 @@ def rec_CallPrintWithoutFlush(node):
             return True
 
 def rec_CallPrintWithEndn(node):
-    # 是否是print()且不是print(args, flush=True)
+    # 是否是print(args, end='\n')
     if node.type == 'call':
         func = node.child_by_field_name('function')
         if func.text == b'print':
@@ -42,7 +42,7 @@ def rec_CallPrintWithEndn(node):
                         return True
 
 def rec_CallPrintWithoutEnd(node):
-    # 是否是print()且不是print(args, flush=True)
+    # 是否是print()且不是print(args, end='\n')
     if node.type == 'call':
         func = node.child_by_field_name('function')
         if func.text == b'print':

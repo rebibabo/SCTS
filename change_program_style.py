@@ -27,7 +27,7 @@ class CodeMarker:
                 4.1: ('range', 'add_zero'), 4.2: ('range', 'del_zero'), 4.3: ('range', 'add_index'), 4.4: ('range', 'del_index'),
                 5.1: ('call', 'add_magic_call'), 5.2: ('call', 'del_magic_call'),
                 6.1: ('string', 'single'), 6.2: ('string', 'double'), 6.3: ('string', 'add_f'), 6.4: ('string', 'right_format'), 6.5: ('string', 'left_f'),
-                7.1: ('op', 'augmented_assignment'), 7.2: ('op', 'assignment'),
+                7.1: ('op', 'augmented_assignment'), 7.2: ('op', 'assignment'), 7.3: ('op', 'test_left_const'), 7.4:('op', 'smaller'), 7.5:('op', 'bigger'),
                 8.1: ('for', 'add_enumerate'), 8.2: ('for', 'while'),
                 10.1: ('return', 'add_bracket'), 10.2: ('return', 'del_bracket'), 10.3: ('return', 'add_None'), 10.4: ('return', 'del_None')
             }
@@ -101,13 +101,13 @@ if __name__ == '__main__':
     codemarker = CodeMarker('python')
     # code = open('test.py').read()
     # print(code)
-    # new_code, succ = codemarker.change_file_style([8.2], code)
+    # new_code, succ = codemarker.change_file_style([7.5], code)
     # print(new_code)
-    for style_choice in [8.2]:
+    for style_choice in [7.3]:
         print('style_choice:',style_choice)
-        codemarker.change_dir_style([style_choice], 'dataset/codesearch/0', f'change/{style_choice}')
+        codemarker.change_dir_style([style_choice], 'dataset/codesearch/1', f'change/{style_choice}')
     
 
-
+#[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 8.1, 8.2, 10.1, 10.2, 10.3, 10.4]
 
 

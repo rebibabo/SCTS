@@ -57,6 +57,9 @@ transformation_operators = {
     'op': {
         'augmented_assignment': (rec_AugmentedAssignment, cvt_AugmentedAssignment2Assignment),
         'assignment': (rec_Assignment, cvt_Assignment2AugmentedAssignment),
+        'test_left_const': (rec_CmpRightConst, cvt_RightConst2LeftConst),
+        'smaller': (rec_CmpOptBigger, cvt_Bigger2Smaller),
+        'bigger': (rec_CmpOptSmaller, cvt_Smaller2Bigger),
     },
     'for': {
         'add_enumerate': (rec_ForIter, cvt_AddEnumerate),
