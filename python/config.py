@@ -4,6 +4,10 @@ from .transform2_list import *
 from .transform3_dict import *
 from .transform4_range import *
 from .transform5_call import *
+from .transform6_string import *
+from .transform7_op import *
+from .transform8_for import *
+from .transform10_return import *
 
 transformation_operators = {
     'var': {
@@ -25,7 +29,7 @@ transformation_operators = {
         'init_call_list': (rec_InitList, cvt_InitList2InitCallList),
         'init_list': (rec_InitCallList, cvt_InitCallList2InitList),
         'call_list': (rec_List, cvt_List2CallList),
-        'list': (rec_CallList, cvt_CallList2List)
+        'list': (rec_CallList, cvt_CallList2List),
     },
     'dict': {
         'init_call_dict': (rec_InitDict, cvt_InitDict2InitCallDict),
@@ -36,10 +40,33 @@ transformation_operators = {
     'range': {
         'add_zero': (rec_CallRange, cvt_CallRange2CallRangeWithZero),
         'del_zero': (rec_CallRangeWithZero, cvt_CallRangeWithZero2CallRange),
+        'add_index': (rec_SubscriptSlice, cvt_AddIndex),
+        'del_index': (rec_SubscriptSlice, cvt_DelIndex)
     },
     'call': {
         'add_magic_call': (rec_Call, cvt_Call2MagicCall),
         'del_magic_call': (rec_MagicCall, cvt_MagicCall2Call),
+    },
+    'string': {
+        'single': (rec_string, cvt_single_quotation),
+        'double': (rec_string, cvt_double_quotation),
+        'add_f': (rec_not_format_string, cvt_add_f),
+        'right_format': (rec_format_string_left, cvt_LeftF2RightFormat),
+        'left_f': (rec_format_string_right, cvt_RightFormat2LeftF)
+    },
+    'op': {
+        'augmented_assignment': (rec_AugmentedAssignment, cvt_AugmentedAssignment2Assignment),
+        'assignment': (rec_Assignment, cvt_Assignment2AugmentedAssignment),
+    },
+    'for': {
+        'add_enumerate': (rec_ForIter, cvt_AddEnumerate),
+        'while': (rec_ForRange, cvt_ForRange2While)
+    },
+    'return': {
+        'add_bracket': (rec_MultiReturnNotTuple, cvt_ReturnTuple),
+        'del_bracket': (rec_MultiReturnWithTuple, cvt_ReturnWithoutTuple),
+        'add_None': (rec_MultiReturnWithoutNone, cvt_AddNone),
+        'del_None': (rec_MultiReturnWithNone, cvt_DelNone)
     },
 }
 

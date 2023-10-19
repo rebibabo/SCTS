@@ -34,6 +34,8 @@ def is_init_dollar(name):       # $$$aaa
 
 def sub_token(name):            # 将token变成subtoken
     subtoken = []
+    if len(name) == 0:
+        return subtoken
     pre_i = 0
     if is_camel_case(name):
         for i in range(len(name)):

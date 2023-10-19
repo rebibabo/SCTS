@@ -19,6 +19,11 @@ def rec_CallRangeWithZero(node):
             if len(args.children) == 5 and args.children[1].type == 'integer' and args.children[1].text == b'0':
                 return True
 
+def rec_SubscriptSlice(node):
+    if node.type == 'subscript':
+        if node.children[2].type == 'slice':
+            return True
+
 '''==========================替换========================'''
 def cvt_CallRange2CallRangeWithZero(node):
     # range(C) -> range(0,C)
@@ -31,3 +36,31 @@ def cvt_CallRangeWithZero2CallRange(node):
     if rec_CallRangeWithZero(node):
         args = node.child_by_field_name('arguments')        # 删除第二个参数开始的位置到第一个参数开始的位置
         return [(args.children[3].start_byte, args.start_byte - args.children[3].start_byte + 1)]
+
+def cvt_AddIndex(node):
+    # a[:n] -> a[0:n] or a[:-n] -> a[:len(a)-n]
+    if rec_SubscriptSlice(node):
+        id = node.children[0].text.decode('utf-8')
+        slice = node.children[2].text.decode('utf-8')
+        if slice.count(':') == 1:
+            left, right = slice.split(':')
+            ret = []
+            if left == '':
+                ret.append((node.children[2].start_byte, '0'))
+            if right.startswith('-'):
+                ret.append((node.children[2].start_byte + slice.find(':') + 1, f'len({id})'))
+            return ret
+
+def cvt_DelIndex(node):
+    # a[0:n] -> a[:n] or a[:len(a)-n] -> a[:-n]
+    if rec_SubscriptSlice(node):
+        id = node.children[0].text.decode('utf-8')
+        slice = node.children[2].text.decode('utf-8')
+        if slice.count(':') == 1:
+            left, right = slice.split(':')
+            ret = []
+            if left == '0':
+                ret.append((node.children[2].start_byte + slice.find(':'), -1))
+            if f'len({id})-' in right.replace(' ', ''):
+                ret.append((node.children[2].start_byte + slice.find('-'), slice.find(':') - slice.find('-') + 1))
+            return ret
