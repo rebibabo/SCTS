@@ -1,6 +1,12 @@
 import re
 from tree_sitter import Parser, Language
+import inspect
+text = lambda x: x.text.decode('utf-8')
 
+def get_parameter_count(func):
+    signature = inspect.signature(func)
+    params = signature.parameters
+    return len(params)
 
 def match_from_bytes(node, blob):
     return blob[node.start_byte:node.end_byte]
@@ -37,10 +43,14 @@ def traverse_type(node, results, kind):
         traverse_type(n, results, kind)
 
 
-def traverse_rec_func(node, results, func):
+def traverse_rec_func(node, results, func, code=None):
     # 遍历整个AST树，返回符合func的节点列表results
-    if func(node):
-        results.append(node)
+    if get_parameter_count(func) == 1:
+        if func(node):
+            results.append(node)
+    else:
+        if func(node, code):
+            results.append(node)
     if not node.children:
         return
     for n in node.children:

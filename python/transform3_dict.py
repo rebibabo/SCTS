@@ -1,4 +1,4 @@
-from utils import replace_from_blob, traverse_rec_func
+from utils import replace_from_blob, traverse_rec_func, text
 
 '''==========================匹配========================'''
 def rec_InitCallDict(node):
@@ -33,23 +33,19 @@ def rec_Dict(node):
 '''==========================替换========================'''
 def cvt_InitDict2InitCallDict(node):
     # {} -> dict()
-    if rec_InitDict(node):
-        # 删除{}                      加上dict()
-        return [(node.end_byte, -len(node.text)), (node.end_byte, 'dict()')]
-        
+    # 删除{}                      加上dict()
+    return [(node.end_byte, -len(node.text)), (node.end_byte, 'dict()')]
+    
 def cvt_InitCallDict2InitDict(node):
     # dict() -> {}
-    if rec_InitCallDict(node):
-        return [(node.end_byte, -len(node.text)), (node.end_byte, '{}')]
+    return [(node.end_byte, -len(node.text)), (node.end_byte, '{}')]
 
 def cvt_Dict2CallDict(node):
     # {...} -> dict({...})
-    if rec_Dict(node):
-        return [(node.start_byte, 'dict('), (node.end_byte, ')')]
+    return [(node.start_byte, 'dict('), (node.end_byte, ')')]
 
 def cvt_CallDict2Dict(node):
     # dict({...}) -> {...}
-    if rec_CallDict(node):
-        args = node.child_by_field_name('arguments')
-        return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除dict( 
-                (args.children[2].end_byte, -1)]
+    args = node.child_by_field_name('arguments')
+    return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除dict( 
+            (args.children[2].end_byte, -1)]

@@ -55,10 +55,10 @@ def sub_token(name):            # 将token变成subtoken
     else:
         return [name]
     return subtoken
-    
+
 '''==========================匹配========================'''
 def rec_identifier(node):
-    if node.type == 'identifier' and node.parent.type not in ['call', 'keyword_argument', 'attribute']:
+    if node.type == 'identifier' and node.parent.type not in ['function_declarator', 'call_expression', 'field_expression']:
         return True
 
 '''==========================替换========================'''

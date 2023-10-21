@@ -1,4 +1,4 @@
-from utils import replace_from_blob, traverse_rec_func
+from utils import replace_from_blob, traverse_rec_func, text
 
 '''==========================匹配========================'''
 def rec_InitCallList(node):
@@ -33,23 +33,19 @@ def rec_List(node):
 '''==========================替换========================'''
 def cvt_InitList2InitCallList(node):
     # [] -> list()
-    if rec_InitList(node):
-        # 删除[]                      加上list()
-        return [(node.end_byte, -len(node.text)), (node.end_byte, 'list()')]
+    # 删除[]                      加上list()
+    return [(node.end_byte, -len(node.text)), (node.end_byte, 'list()')]
         
 def cvt_InitCallList2InitList(node):
     # list() -> []
-    if rec_InitCallList(node):
-        return [(node.end_byte, -len(node.text)), (node.end_byte, '[]')]
+    return [(node.end_byte, -len(node.text)), (node.end_byte, '[]')]
 
 def cvt_List2CallList(node):
     # [...] -> list([...])
-    if rec_List(node):
-        return [(node.start_byte, 'list('), (node.end_byte, ')')]
+    return [(node.start_byte, 'list('), (node.end_byte, ')')]
 
 def cvt_CallList2List(node):
     # list([...]) -> [...]
-    if rec_CallList(node):
-        args = node.child_by_field_name('arguments')
-        return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除list( 
-                (args.children[2].end_byte, -1)]            # 删除)
+    args = node.child_by_field_name('arguments')
+    return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除list( 
+            (args.children[2].end_byte, -1)]            # 删除)

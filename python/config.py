@@ -7,6 +7,7 @@ from .transform5_call import *
 from .transform6_string import *
 from .transform7_op import *
 from .transform8_for import *
+from .transform9_declare import *
 from .transform10_return import *
 
 transformation_operators = {
@@ -40,8 +41,9 @@ transformation_operators = {
     'range': {
         'add_zero': (rec_CallRange, cvt_CallRange2CallRangeWithZero),
         'del_zero': (rec_CallRangeWithZero, cvt_CallRangeWithZero2CallRange),
-        'add_index': (rec_SubscriptSlice, cvt_AddIndex),
-        'del_index': (rec_SubscriptSlice, cvt_DelIndex)
+        'add_slice_index': (rec_SubscriptSlice, cvt_AddSliceIndex),
+        'del_slice_index': (rec_SubscriptSlice, cvt_DelSliceIndex),
+        'add_index': (rec_ListIndex, cvt_AddIndex)
     },
     'call': {
         'add_magic_call': (rec_Call, cvt_Call2MagicCall),
@@ -63,7 +65,13 @@ transformation_operators = {
     },
     'for': {
         'add_enumerate': (rec_ForIter, cvt_AddEnumerate),
-        'while': (rec_ForRange, cvt_ForRange2While)
+        'while': (rec_ForRange, cvt_ForRange2While),
+        'for': (rec_ListComprehension, cvt_ListComprehension2For)
+    },
+    'declare': {
+        'split': (rec_AssignmentMerge, cvt_Merge2Split),
+        'merge_simple': (rec_AssignmentMergeSame, cvt_Merge2MergeSimple),
+        'merge': (rec_MultiAssignment, cvt_Split2Merge)
     },
     'return': {
         'add_bracket': (rec_MultiReturnNotTuple, cvt_ReturnTuple),

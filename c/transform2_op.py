@@ -3,30 +3,35 @@ from utils import replace_from_blob, traverse_rec_func, text
 '''==========================匹配========================'''
 def rec_AugmentedAssignment(node):
     # a ?= b
-    if node.type == 'augmented_assignment':
-        return True
+    if node.type == 'assignment_expression':
+        if node.child_count >= 2 and text(node.children[1]) in ['+=', '-=', '*=', '/=', '%=', '<<=', '>>=']:
+            return True
 
 def rec_Assignment(node):
     # a = a ? b
-    if node.type == 'assignment':
+    if node.type == 'assignment_expression':
         left_param = node.children[0].text
         if node.children[2].children:
             right_first_param = node.children[2].children[0].text
-            return left_param == right_first_param
+            if text(node.children[2].children[1]) in ['+', '-', '*', '/', '%', '<<', '>>']:
+                return left_param == right_first_param
 
 def rec_CmpRightConst(node):
-    if node.type == 'comparison_operator' and node.children[1].text != b'in'\
+    # a op const
+    if node.type == 'binary_expression' \
             and text(node.children[1]) in ['<', '>', '<=', '>=', '==', '!='] \
-            and node.children[2].type in ['integer', 'string', 'list', 'set', 'dictionary', 'float', 'tuple']:
+            and node.children[2].type == 'number_literal':
         return True
 
 def rec_CmpOptBigger(node):
-    if node.type == 'comparison_operator' and node.children[1].text != b'in'\
+    # a > b
+    if node.type == 'binary_expression' \
             and text(node.children[1]) in ['>', '>=']:
         return True
 
 def rec_CmpOptSmaller(node):
-    if node.type == 'comparison_operator' and node.children[1].text != b'in'\
+    # a <= b
+    if node.type == 'binary_expression' \
             and text(node.children[1]) in ['<', '<=']:
         return True
 
