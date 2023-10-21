@@ -59,6 +59,12 @@ transformation_operators = {
         'temp': (rec_DeclareNotTemp, cvt_DeclareTemp)
     },
     'loop': {
-        
+        'obc': (rec_For, cvt_OBC),
+        'aoc': (rec_For, cvt_AOC),
+        'abo': (rec_For, cvt_ABO),
+        'aoo': (rec_For, cvt_AOO),
+        'obo': (rec_For, cvt_OBO),
+        'ooc': (rec_For, cvt_OOC),
+        'ooo': (rec_For, cvt_OOO),
     },
 }

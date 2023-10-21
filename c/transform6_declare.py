@@ -16,9 +16,10 @@ def get_declare_info(node):
     return type_ids_dict, type_dec_node
 
 def is_declaration(node):
+    # 是否是变量名声明
     while node:
         if node.type == 'declaration':
-            return True, node
+            return True
         node = node.parent
 
 def get_id_first_line(node, first_declare, first_use):
@@ -84,7 +85,6 @@ def rec_DeclareNotTemp(node):
     if node.type == 'compound_statement':
         get_id_first_line(node, first_declare, first_use)
         input((first_declare, first_use))
-
 
 '''==========================替换========================'''
 def cvt_DeclareMerge2Split(node, code):

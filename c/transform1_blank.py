@@ -35,11 +35,11 @@ def rec_OperatorOrSpliter(node, code):
 
 def rec_IfForWhileNoBracket(node):
     #for(); while(); if();
-    if node.type in ['while_statement', 'if_statement', 'for_statement']:
+    # input((node.type, node.text))
+    if node.type in ['while_statement', 'if_statement', 'for_statement', 'else_clause']:
         if '{' not in text(node):
             return True
-
-
+            
 '''==========================替换========================'''
 def cvt_BracketSame2NextLine(node, code):
     # 大括号写到下一行
@@ -74,12 +74,12 @@ def cvt_AddIfForWhileBracket(node, code):
     # 在单行If、For、While添加大括号
     statement_node = None
     for each in node.children:
-        if each.type == 'expression_statement':
+        if each.type in ['expression_statement', 'return_statement', 'compound_statement', 'break_statement']:
             statement_node = each
     if statement_node is None:
         return
     indent = get_indent(node.start_byte, code)
-    input(indent)
+    
     if '\n' not in text(node):
         return [(statement_node.start_byte, statement_node.prev_sibling.end_byte - statement_node.start_byte),
                 (statement_node.start_byte, f" {{\n{(indent + 4) * ' '}"), 

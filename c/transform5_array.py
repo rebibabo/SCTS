@@ -50,7 +50,7 @@ def rec_DynMemOneLine(node):
         if node.children[1].type == 'init_declarator':
             if node.children[1].child_count == 3 and node.children[1].children[2].type == 'cast_expression':
                 temp_node = node.children[1].children[2]
-                if temp_node.child_count == 4 and temp_node.children[3].children[0].text == b'malloc':
+                if temp_node.child_count == 4 and temp_node.children[3].child_count and temp_node.children[3].children[0].text == b'malloc':
                     param_node = temp_node.children[3].children[1].children[1]
                     for child in param_node.children:
                         if child.type in ['number_literal', 'identifier']:
@@ -66,7 +66,7 @@ def rec_DynMemTwoLine(node):
                 id = child.children[0].children[0].text
                 if child.children[0].children[2].type == 'cast_expression':
                     temp_node = child.children[0].children[2]
-                    if temp_node.child_count == 4 and temp_node.children[3].children[0].text == b'malloc':
+                    if temp_node.child_count == 4 and temp_node.children[3].child_count and temp_node.children[3].children[0].text == b'malloc':
                         param_node = temp_node.children[3].children[1].children[1]
                         for child in param_node.children:
                             if child.type in ['number_literal', 'identifier']:
@@ -125,6 +125,8 @@ def cvt_Static2Dyn(node, code):
                     f"{indent * ' '}for (int i = 0; i < {size_1}; i++) {{\n" + \
                     f"{(indent + 4) * ' '} {id}[i] = ({type}*)malloc(sizeof({type}) * {size_2});\n" + \
                     f"{indent * ' '}}}"
+            else:
+                return 
             if is_delete_line:  # 删除整行
                 return [(node.end_byte, node.start_byte - node.end_byte),
                         (node.start_byte, str)]
@@ -165,9 +167,13 @@ def cvt_Dyn2Static(node):
                         temp_node = child.children[0].children[2]
                         type = text(temp_node.children[1].children[0])
                         param_node = temp_node.children[3].children[1].children[1]
+                        size = ''
                         for ch in param_node.children:
-                            if ch.type in ['number_literal', 'identifier']:
+                            if ch.type in ['number_literal', 'identifier', 'sizeof_expression']:
                                 size = text(ch)
+                        # if size == '':
+                        input(param_node.text)
+                        input(size)
                         ret.append((child.end_byte, child.start_byte - child.end_byte))
                         ret.append((child.start_byte, f"{type} {id}[{size}];"))
                         break
