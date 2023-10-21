@@ -26,10 +26,24 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
 
+def is_contain_id(node, id, contain):
+    if node.type == 'identifier' and text(node) == id:
+        contain.append(1)
+    if not node.children:
+        return
+    for n in node.children:
+        is_contain_id(n, id, contain)
+
 '''==========================匹配========================'''
 def rec_For(node):
     if node.type == 'for_statement':
         return True
+
+def rec_while(node):
+    if node.type == 'while_statement':
+        condition = node.children[1].children[1]
+        if condition.type == 'binary_expression':
+            return True
 
 '''==========================替换========================'''
 def cvt_OBC(node, code):
@@ -203,4 +217,35 @@ def cvt_OOO(node, code):
         ret.append((last_expression_node.end_byte, f"\n{indent * ' '}{text(abc[2])};"))
     if add_bracket:
         ret.extend(add_bracket)
+    return ret
+
+def cvt_for(node, code):
+    # for(a;b;c)
+    a = b = c = None
+    b = node.children[1].children[1]
+    id = ''
+    if b.type == 'binary_expression':
+        for each in b.children:
+            if each.type == 'identifier':
+                id = text(each)
+    if id:
+        return
+    for each in node.prev_sibling.children:
+        is_contain = []
+        is_contain_id(each, id, is_contain)
+        if len(is_contain):
+            a = node.prev_sibling
+    for each in node.children[2].children[1: -1]:
+        is_contain = []
+        is_contain_id(each, id, is_contain)
+        if len(is_contain):
+            c = each
+    ret = [(node.children[1].end_byte, node.children[0].start_byte - node.children[1].end_byte)]
+    if a:
+        ret.append((a.end_byte, a.prev_sibling.end_byte - a.end_byte))
+    if c:
+        ret.append((c.end_byte, c.prev_sibling.end_byte - c.end_byte))
+    text_a = text(a) if a else ''
+    for_str = f"for({text_a}{'; ' if ';' not in text_a else ' '}{text(b)}; {text(c).replace(';', '') if c else ''})"
+    ret.append((node.start_byte, for_str))
     return ret

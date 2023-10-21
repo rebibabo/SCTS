@@ -53,7 +53,7 @@ class CodeMarker:
                 4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
                 5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
                 6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'),
-                7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 
+                7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
             }
         }
 
@@ -159,16 +159,15 @@ class CodeMarker:
                             f_w.write(new_code)
                     pbar.set_description(f'Successful Rate: {succ_num/try_num*100:.2f}%')
                     pbar.update()
-                    
 
 
 if __name__ == '__main__':
     codemarker = CodeMarker('c')
-    code = open('test.c').read()
-    print(code)
-    new_code, succ = codemarker.change_file_style([5.2], code)
-    print(new_code)
-    for style_choice in [5.2, 5.3, 5.4]:
+    # code = open('test.c').read()
+    # print(code)
+    # new_code, succ = codemarker.change_file_style([7.8], code)
+    # print(new_code)
+    for style_choice in [7.8]:
         print('style_choice:',style_choice)
         codemarker.change_dir_style([style_choice], 'dataset/ProgramData', f'change/{style_choice}')
     # codemarker.get_dir_popularity([5.1], 'dataset/ProgramData/2')

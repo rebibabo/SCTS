@@ -167,13 +167,10 @@ def cvt_Dyn2Static(node):
                         temp_node = child.children[0].children[2]
                         type = text(temp_node.children[1].children[0])
                         param_node = temp_node.children[3].children[1].children[1]
-                        size = ''
+                        size = text(param_node)
                         for ch in param_node.children:
-                            if ch.type in ['number_literal', 'identifier', 'sizeof_expression']:
+                            if ch.type in ['number_literal', 'identifier']:
                                 size = text(ch)
-                        # if size == '':
-                        input(param_node.text)
-                        input(size)
                         ret.append((child.end_byte, child.start_byte - child.end_byte))
                         ret.append((child.start_byte, f"{type} {id}[{size}];"))
                         break
@@ -195,6 +192,8 @@ def cvt_Array2Pointer(node):
     elif dim == 2:
         # a[i][j] -> *(*(a + i) + j);
         id = text(node.children[0].children[0])
+        if len(node.children[0].children) < 3 or len(node.children) < 3:
+            return
         index_1 = text(node.children[0].children[2])
         index_2 = text(node.children[2])
         return [(node.end_byte, node.start_byte - node.end_byte),
@@ -202,6 +201,8 @@ def cvt_Array2Pointer(node):
     elif dim == 3:
         # a[i][j][k] -> *(*(*(a + i) + j) + k)
         id = text(node.children[0].children[0].children[0])
+        if len(node.children[0].children[0].children) < 3 or len(node.children[0].children) < 3 or len(node.children) < 3:
+            return
         index_1 = text(node.children[0].children[0].children[2])
         index_2 = text(node.children[0].children[2])
         index_3 = text(node.children[2])

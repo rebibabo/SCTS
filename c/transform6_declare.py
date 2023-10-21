@@ -84,7 +84,9 @@ def rec_DeclareNotTemp(node):
     first_declare, first_use = {}, {}
     if node.type == 'compound_statement':
         get_id_first_line(node, first_declare, first_use)
-        input((first_declare, first_use))
+        for id, dec in first_declare.items():
+            if id in first_use and first_use[id] != dec + 1:
+                return True
 
 '''==========================替换========================'''
 def cvt_DeclareMerge2Split(node, code):
@@ -116,6 +118,7 @@ def cvt_DeclareSplit2Merge(node, code):
     return ret
             
 def cvt_DeclareFirst(node, code):
+    # 把变量名声明的位置都放在最前面
     ret = []
     type_ids_dict, type_dec_node = get_declare_info(node)
     indent = get_indent(node.children[1].start_byte, code)
@@ -133,5 +136,55 @@ def cvt_DeclareFirst(node, code):
     ret.append((start_byte, '\n'.join(declare_list)))
     return ret
 
-def cvt_DeclareTemp(node):
-    return
+def cvt_DeclareTemp(node, code):
+    first_declare, first_use, id_type_dict = {}, {}, {}
+    get_id_first_line(node, first_declare, first_use)
+    temp_id = []
+    for id, dec in first_declare.items():
+        if id in first_use and first_use[id] != dec + 1:
+            temp_id.append(id)
+    declare_node = []
+    for child in node.children:
+        if child.type == 'declaration':
+            type = text(child.children[0])
+            for each in child.children[1: -1]:
+                if each.type not in [',', ';']:
+                    id_type_dict[text(each)] = type
+                    if text(each) in temp_id and child not in declare_node:
+                        declare_node.append(child)
+    ret = []
+    for each in declare_node:
+        # 先判断node里面的所有id是否都在temp_id，如果是，则要删除整行，否则只删除部分id
+        temp_id_node = []
+        delete_all_line = True
+        type = text(each.children[0])
+        for ch in each.children[1: -1]:
+            if ch.type not in [',', ';']:
+                if text(ch) not in temp_id:
+                    delete_all_line = False
+                else:
+                    temp_id_node.append(ch)
+        # 先删除不在最开始使用该id前一行声明的ids
+        if delete_all_line == False:
+            # 删除该declare中的id
+            for id_node in temp_id_node:
+                if id_node.next_sibling.next_sibling:  # 如果是int a, b, c;这里的a,b不是最后一个元素
+                    next_node = id_node.next_sibling.next_sibling
+                    ret.append((next_node.start_byte, id_node.start_byte - next_node.start_byte))
+                elif id_node.next_sibling and id_node.next_sibling.type == ';':   # 如果是c这样的最后一个元素
+                    prev_node = id_node.prev_sibling
+                    ret.append((id_node.end_byte, prev_node.start_byte - id_node.end_byte))
+        else:   # 删除一整行
+            prev_node = each.prev_sibling
+            ret.append((each.end_byte, prev_node.end_byte - each.end_byte))
+    # 再在temp_id的所有第一次使用前的一行插入
+    for id in temp_id:
+        if id in id_type_dict.keys():
+            type = id_type_dict[id]
+            line = first_use[id]
+            # 找到line的对应行的位置
+            for child in node.children:
+                if child.start_point[0] == line:
+                    indent = get_indent(child.start_byte, code)
+                    ret.append((child.start_byte, f"{type} {id};\n{indent * ' '}"))
+    return ret
