@@ -29,6 +29,9 @@ class CodeMarker:
         elif self.language == 'c':
             from c.config import transformation_operators as op
             self.op = op
+        elif self.language == 'cpp':
+            from cpp.config import transformation_operators as op
+            self.op = op
         else:
             raise NotImplementedError
         self.style_dict = {
@@ -54,6 +57,17 @@ class CodeMarker:
                 5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
                 6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'),
                 7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
+            },
+            'cpp':{
+                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'),
+                1.1: ('blank', 'bracket_1'), 1.2: ('blank', 'bracket_2'), 1.3: ('blank', 'add_blank'), 1.4: ('blank', 'add_bracket'),
+                2.1: ('op', 'augmented_assignment'), 2.2: ('op', 'assignment'), 2.3: ('op', 'test_left_const'), 2.4:('op', 'smaller'), 2.5:('op', 'bigger'),
+                3.1: ('update', 'left'), 3.2: ('update', 'right'), 3.3: ('update', 'augment'), 3.4: ('update', 'assignment'),
+                4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
+                5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
+                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'),
+                7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
+                8.1: ('cpp', 'stdc++'), 8.2: ('cpp', 'namespace'), 8.3: ('cpp', 'sync_with_false'), 8.4: ('cpp', 'struct'), 8.5: ('cpp', 'coutendl'), 8.6: ('cpp', 'cout'), 8.7: ('cpp', 'del_endl'), 8.8: ('cpp', 'printf'),
             }
         }
 
@@ -162,14 +176,15 @@ class CodeMarker:
 
 
 if __name__ == '__main__':
-    codemarker = CodeMarker('python')
-    # code = open('test.c').read()
-    # print(code)
-    # new_code, succ = codemarker.change_file_style([6.4], code)
-    # print(new_code)
-    for style_choice in [8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]:
+    codemarker = CodeMarker('cpp')
+    code = open('test.c').read()
+    print(code)
+    new_code, succ = codemarker.change_file_style([8.8], code)
+    if succ:
+        print(new_code)
+    for style_choice in [8.7, 8.8]:
         print('style_choice:',style_choice)
-        codemarker.change_dir_style([style_choice], 'dataset/codesearch/0', f'change/{style_choice}')
+        codemarker.change_dir_style([style_choice], 'dataset/ProgramData', f'change/{style_choice}')
     # codemarker.get_dir_popularity([5.1], 'dataset/ProgramData/2')
 
 #[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]
