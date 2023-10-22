@@ -59,7 +59,7 @@ def cvt_RightFormat2LeftF(node):
     # '{}{}'.format(a, b) -> f'{a}{b}'
     str = text(node).strip()
     params_node = node.parent.parent.children[1]
-    params_list = params_text(node)    # (a, b)
+    params_list = text(node)    # (a, b)
     params = params_list[1: -1].replace(' ','').split(',')
     ret = [(node.start_byte, 'f'), 
         (params_node.end_byte, node.end_byte - params_node.end_byte)]

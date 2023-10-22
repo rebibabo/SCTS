@@ -7,7 +7,9 @@ def get_indent(node):
     if node.parent.parent.type == 'block':
         block_text = text(node.parent.parent.parent)
         lines = block_text.split('\n')
-        return len(lines[1]) - len(lines[1].strip())
+        if len(lines) > 1:
+            return len(lines[1]) - len(lines[1].strip())
+    return 0
         
 '''==========================匹配========================'''
 def rec_ForIter(node):
@@ -86,6 +88,8 @@ def cvt_ListComprehension2For(node):
     ret = [(node.end_byte, node.start_byte - node.end_byte)]
     if temp_node.child_count == 5:
         func_, for_, if_ = temp_node.children[1:4]
+        if for_.child_count < 4:
+            return
         iter_name = text(for_.children[1])
         list_name = text(for_.children[3])
         if left_id == list_name:
@@ -97,8 +101,11 @@ def cvt_ListComprehension2For(node):
         func_text = text(func_)
         if 'range' not in text(for_):
             pattern = re.compile(r'(?<!\w)'+iter_name+'(?!\w)')
-            if_text = pattern.sub(f'{list_name}[{iter_name}]', if_text)
-            func_text = pattern.sub(f'{list_name}[{iter_name}]', func_text)
+            try:
+                if_text = pattern.sub(f'{list_name}[{iter_name}]', if_text)
+                func_text = pattern.sub(f'{list_name}[{iter_name}]', func_text)
+            except:
+                return
             ret.append((node.start_byte, f"{indent*' '}for {iter_name} in range(len({list_name})):\n"))
             ret.append((node.start_byte, f"{(indent+4)*' '}{if_text}:\n"))
             ret.append((node.start_byte, f"{(indent+8)*' '}{left_id}[{iter_name}] = {func_text}\n"))
@@ -118,7 +125,10 @@ def cvt_ListComprehension2For(node):
         func_text = text(func_)
         if 'range' not in for_text:
             pattern = re.compile(r'(?<!\w)'+iter_name+'(?!\w)')
-            func_text = pattern.sub(f'{list_name}[{iter_name}]', func_text)
+            try:
+                func_text = pattern.sub(f'{list_name}[{iter_name}]', func_text)
+            except:
+                return
             ret.append((node.start_byte, f"{indent*' '}for {iter_name} in range(len({list_name})):\n"))
             ret.append((node.start_byte, f"{(indent+4)*' '}{left_id}[{iter_name}] = {func_text}\n"))
         else:

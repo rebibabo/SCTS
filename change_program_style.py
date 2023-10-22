@@ -101,14 +101,14 @@ class CodeMarker:
             operations, match_nodes = [], []
             traverse_rec_func(AST.root_node, match_nodes, match_func, code)
             for node in match_nodes:
-                try:
-                    if get_parameter_count(sub_func) == 1:
-                        op = sub_func(node)
-                    else:
-                        op = sub_func(node, code)
-                except:
-                    print("error", style_choice)
-                    continue
+                # try:
+                if get_parameter_count(sub_func) == 1:
+                    op = sub_func(node)
+                else:
+                    op = sub_func(node, code)
+                # except:
+                #     print("error", style_choice)
+                #     continue
                 if op is not None:
                     operations.extend(op)
             code = replace_from_blob(operations, code)
@@ -167,9 +167,9 @@ if __name__ == '__main__':
     # print(code)
     # new_code, succ = codemarker.change_file_style([6.4], code)
     # print(new_code)
-    for style_choice in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]:
+    for style_choice in [8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]:
         print('style_choice:',style_choice)
-        codemarker.change_dir_style([style_choice], 'dataset/codesearch', f'change/{style_choice}')
+        codemarker.change_dir_style([style_choice], 'dataset/codesearch/0', f'change/{style_choice}')
     # codemarker.get_dir_popularity([5.1], 'dataset/ProgramData/2')
 
 #[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]

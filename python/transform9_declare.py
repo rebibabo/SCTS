@@ -6,8 +6,10 @@ def get_indent(node):
     if node.parent.parent.type == 'block':
         block_text = text(node.parent.parent.parent)
         lines = block_text.split('\n')
-        return len(lines[1]) - len(lines[1].strip())
-
+        if len(lines) > 1:
+            return len(lines[1]) - len(lines[1].strip())
+    return 0
+    
 '''==========================匹配========================'''
 def rec_AssignmentMerge(node):
     # a, b = c, d
