@@ -67,5 +67,6 @@ transformation_operators = {
         'ooc': (rec_For, cvt_OOC),
         'ooo': (rec_For, cvt_OOO),
         'for': (rec_while, cvt_for),
+        'while': (rec_For, cvt_while)
     },
 }

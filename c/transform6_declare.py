@@ -15,27 +15,35 @@ def get_declare_info(node):
                 type_ids_dict[type].append(text(each))
     return type_ids_dict, type_dec_node
 
-def is_declaration(node):
-    # 是否是变量名声明
-    while node:
-        if node.type == 'declaration':
-            return True
-        node = node.parent
-
-def get_id_first_line(node, first_declare, first_use):
-    # 获取所有变量在该node代码块第一次声明和使用的行号
-    if node.type == 'identifier':
-        line = node.start_point[0]
-        if is_declaration(node):
-            if text(node) not in first_declare.keys():
-                first_declare[text(node)] = line
-        elif node.parent.type != 'call_expression':
-            if text(node) not in first_use.keys():
-                first_use[text(node)] = line
+def contain_id(node, contain):
+    # 返回node节点子树中的所有变量名
+    if node.child_by_field_name('index'):   # a[i] < 2中的index：i
+        contain.add(text(node.child_by_field_name('index')))
+    if node.type == 'identifier' and node.parent.type not in ['subscript_expression', 'call_expression']:   # a < 2中的a
+        contain.add(text(node))
     if not node.children:
         return
     for n in node.children:
-        get_id_first_line(n, first_declare, first_use)
+        contain_id(n, contain)
+
+def get_id_first_line(node):
+    # 获取所有变量在该node代码块第一次声明和使用的行号
+    first_declare, first_use = {}, {}
+    for child in node.children:
+        if child.type == 'declaration':
+            dec_id = set()
+            contain_id(child, dec_id)
+            for each in dec_id:
+                if each not in first_declare.keys():
+                    first_declare[each] = child.start_point[0]
+        # elif child.type not in ['if_statement', 'for_statement', 'else_clause', 'while_statement']: # 不考虑复合语句里面的临时变量名
+        else:
+            use_id = set()
+            contain_id(child, use_id)
+            for each in use_id:
+                if each not in first_use.keys():
+                    first_use[each] = child.start_point[0]
+    return first_declare, first_use
 
 def get_indent(start_byte, code):
     indent = 0
@@ -81,9 +89,8 @@ def rec_DeclareNotFirst(node):
 
 def rec_DeclareNotTemp(node):
     # 定义变量没有在第一次使用的上一行
-    first_declare, first_use = {}, {}
     if node.type == 'compound_statement':
-        get_id_first_line(node, first_declare, first_use)
+        first_declare, first_use = get_id_first_line(node)
         for id, dec in first_declare.items():
             if id in first_use and first_use[id] != dec + 1:
                 return True
@@ -137,13 +144,13 @@ def cvt_DeclareFirst(node, code):
     return ret
 
 def cvt_DeclareTemp(node, code):
-    first_declare, first_use, id_type_dict = {}, {}, {}
-    get_id_first_line(node, first_declare, first_use)
-    temp_id = []
+    # 将变量名声明的位置放在第一次使用该变量名的前一行
+    first_declare, first_use = get_id_first_line(node)
+    declare_node, temp_id = [], []
     for id, dec in first_declare.items():
         if id in first_use and first_use[id] != dec + 1:
             temp_id.append(id)
-    declare_node = []
+    id_type_dict = {}
     for child in node.children:
         if child.type == 'declaration':
             type = text(child.children[0])
@@ -178,13 +185,24 @@ def cvt_DeclareTemp(node, code):
             prev_node = each.prev_sibling
             ret.append((each.end_byte, prev_node.end_byte - each.end_byte))
     # 再在temp_id的所有第一次使用前的一行插入
+    line_type_id_dict = {}  # 行号， 类型， 变量名
     for id in temp_id:
         if id in id_type_dict.keys():
             type = id_type_dict[id]
             line = first_use[id]
+            line_type_id_dict.setdefault(line, {})
+            line_type_id_dict[line].setdefault(type, [])
+            line_type_id_dict[line][type].append(id)
+    for line in line_type_id_dict:
+        for type in line_type_id_dict[line]:
+            ids = line_type_id_dict[line][type]
             # 找到line的对应行的位置
             for child in node.children:
                 if child.start_point[0] == line:
                     indent = get_indent(child.start_byte, code)
-                    ret.append((child.start_byte, f"{type} {id};\n{indent * ' '}"))
+                    if len(ids) == 1:   # 如果改行改类型变量插入的只有一个
+                        dec_str = f"{type} {ids[0]};\n{indent * ' '}"
+                    else:       # 如果有多个
+                        dec_str = f"{type} {', '.join(ids)};\n{indent * ' '}"
+                    ret.append((child.start_byte, dec_str))
     return ret
