@@ -1,5 +1,6 @@
 from utils import replace_from_blob, traverse_rec_func, text
 from .transform5_array import get_array_dim
+from .transform6_declare import contain_id
 import re
 
 def find_format_specifiers(format_string):
@@ -18,17 +19,17 @@ def get_ids_type(node):
             for id in child.children[1: -1]:
                 if id.type == ',':
                     continue
-                elif id.type == 'array_declarator':   # 如果是数组型
-                    dim = get_array_dim(id)
-                    id_type_dict[text(id)] = type + dim*'*'
-                elif id.type == 'pointer_declarator':   # 如果是指针类型
-                    dim = text(id).count('*')
-                    id_type_dict[text(id)[dim:]] = type + dim*'*'
-                elif id.type == 'init_declarator':      # 如果是变量名申明和赋值同时进行
-                    id_node = id.children[0]
-                    id_type_dict[text(id_node)] = type
+                id_node = id
+                if id.type == 'init_declarator':      # 如果是变量名申明和赋值同时进行
+                    id_node = id.children[0]    # 则变量名为第一个子节点
+                if id_node.type == 'array_declarator':   # 如果是数组型
+                    dim = get_array_dim(id_node)
+                    id_type_dict[text(id_node)] = type + dim*'*'
+                elif id_node.type == 'pointer_declarator':   # 如果是指针类型
+                    dim = text(id_node).count('*')
+                    id_type_dict[text(id_node)[dim:]] = type + dim*'*'
                 else:
-                    id_type_dict[text(id)] = type
+                    id_type_dict[text(id_node)] = type
     return id_type_dict
 
 def type2format(type):
@@ -45,6 +46,88 @@ def type2format(type):
     if type in ['long long', 'unsinged long long']:
         return '%' + ('u' if 'unsigned' in type else '') + 'lld'
 
+def get_stream_info(node, stream_type):
+    stream, stream_node = [], []
+    n = node.children[0]
+    while n:
+        stream.insert(0, text(n.children[2]))
+        stream_node.insert(0, n.children[2])
+        n = n.children[0]
+        if text(n) == stream_type:
+            break
+    ids_type = {}
+    while n:
+        if n.type == 'compound_statement':
+            temp_ids_type = get_ids_type(n)
+            ids_type.update(temp_ids_type)
+        n = n.parent
+    format_str = ""
+    params = []
+    temp_dict = {}
+    for id, type in ids_type.items():
+        if '[' in id:   # 如果是a[i]这样的
+            dim = id.count('[')
+            orig_id = id[:id.find('[')]
+            temp_dict[orig_id] = type
+        else:
+            temp_dict[id] = type
+    ids_type = temp_dict
+    # input(text(node))
+    # input(ids_type)
+    type = ''
+    for i, each in enumerate(stream):
+        if each[0] == '"' and each[-1] == '"':
+            format_str += each[1: -1]
+        elif each == 'endl':
+            format_str += '\\n'
+        else:
+            id = each
+            if each not in ids_type.keys():
+                is_return = True
+                if stream_node[i].type in ['binary_expression', 'cast_expression']: # 如果是二元表达式，则获取右边的变量的类型
+                    ids_name = set()
+                    contain_id(stream_node[i], ids_name)
+                    if len(ids_name):
+                        id = list(ids_name)[0]
+                        if id not in ids_type.keys():
+                            if '[' in id:   # 如果是a[i]这样的
+                                dim = id.count('[')
+                                orig_id = id[:id.find('[')]
+                                if orig_id in ids_type.keys():
+                                    type = ids_type[orig_id][:-dim] # 几维就删掉几颗*
+                                    is_return = False
+                        else:
+                            type = ids_type[id]
+                            is_return = False
+                if '[' in id:   # 如果是a[i]这样的
+                    dim = id.count('[')
+                    orig_id = id[:id.find('[')]
+                    if orig_id in ids_type.keys():
+                        type = ids_type[orig_id][:-dim] # 几维就删掉几颗*
+                        is_return = False
+                if is_return:
+                    return
+            else:
+                type = ids_type[each]
+            format = type2format(type)
+            if format is None:
+                return
+            format_str += format
+            if stream_type == 'cin':
+                if each in ids_type.keys() and ids_type[each] == 'char*':
+                    pass
+                else:
+                    each = '&' + each
+            params.append(each)
+    for i, param in enumerate(params):  
+        if param in ids_type.keys() and ids_type[param] == 'string': # 如果是string类型，要转换成c的字符串c_str()
+            if stream_type == 'cin':
+                return
+            params[i] += '.c_str()'
+    params_str = ', '.join(params)
+    if len(params_str) > 0:
+        params_str = ', '  + params_str
+    return format_str, params_str
 
 '''==========================匹配========================'''
 def rec_Include(node):
@@ -102,6 +185,25 @@ def rec_Cout(node):
             else:
                 return
 
+def rec_Scanf(node):
+    if node.type == 'call_expression':
+        if node.child_by_field_name('function'):
+            func_name = text(node.child_by_field_name('function'))
+            if func_name == 'scanf':
+                return True
+
+def rec_Cin(node):
+    # 判断是否是cin
+    if node.type == 'expression_statement':
+        node = node.children[0]
+        while node:
+            if node.type == 'binary_expression':
+                node = node.children[0]
+            elif text(node) == 'cin' and node.next_sibling.type == '>>':
+                return True
+            else:
+                return
+
 '''==========================替换========================'''
 def cvt_AddBitsStd(node):
     return [(0, '#include<bits/stdc++.h>\n')]
@@ -123,7 +225,7 @@ def cvt_AddSyncWithFalse(node):
 def cvt_DelStruct(node):
     struct_node = node.children[0].children[0]
     id_node = node.children[0].children[1]
-    return [(id_node.start_byte, struct_node.start_byte - id_node.start_byte)]
+    return [(id_node.start_byte, struct_node.start_byte)]
 
 def cvt_Printf2CoutEndl(node):
     # printf("format_str", params); -> cout << str << param_1 << str << param2 << endl;
@@ -152,7 +254,7 @@ def cvt_Printf2CoutEndl(node):
         else:
             cout_stream[-1] = cout_stream[-1][:-3] + '"'
         cout_stream.append('endl')
-    return [(node.end_byte, node.start_byte - node.end_byte),
+    return [(node.end_byte, node.start_byte),
             (node.start_byte, ' << '.join(cout_stream))]
 
 def cvt_Printf2Cout(node):
@@ -176,7 +278,7 @@ def cvt_Printf2Cout(node):
             cout_stream.append(f'"{format_str[each[0]: each[1]]}"')
         if i < len(params):
             cout_stream.append(params[i])
-    return [(node.end_byte, node.start_byte - node.end_byte),
+    return [(node.end_byte, node.start_byte),
             (node.start_byte, ' << '.join(cout_stream))]
 
 def cvt_DelEndl(node):
@@ -192,66 +294,36 @@ def cvt_DelEndl(node):
         if text(cout_stream[-1])[-1] == '"':
             # 如果最后一个输出的是字符串，则在字符串后面加上\n
             return [(cout_stream[-2].end_byte - 1, '\\n'),
-                    (cout_stream[-1].end_byte, cout_stream[-2].end_byte - cout_stream[-1].end_byte)]
+                    (cout_stream[-1].end_byte, cout_stream[-2].end_byte)]
         else:
             # 否则将endl改为'\n'
-            return [(cout_stream[-1].end_byte, cout_stream[-1].start_byte - cout_stream[-1].end_byte),
+            return [(cout_stream[-1].end_byte, cout_stream[-1].start_byte),
                     (cout_stream[-1].start_byte, "'\\n'")]
 
 def cvt_Cout2Printf(node):
     # 将cout转为printf
-    cout_stream = []
-    n = node.children[0]
-    while n:
-        cout_stream.insert(0, text(n.children[2]))
-        n = n.children[0]
-        if text(n) == 'cout':
-            break
-    ids_type = {}
-    while n:
-        if n.type == 'compound_statement':
-            temp_ids_type = get_ids_type(n)
-            ids_type.update(temp_ids_type)
-        n = n.parent
-    format_str = ""
-    params = []
-    for i, param in enumerate(params):  
-        if ids_type[param] == 'string': # 如果是string类型，要转换成c的字符串c_str()
-            params[i] += '.c_str()'
-    temp_dict = {}
-    for id, type in ids_type.items():
-        if '[' in id:   # 如果是a[i]这样的
-            dim = id.count('[')
-            orig_id = id[:id.find('[')]
-            temp_dict[orig_id] = type
-        else:
-            temp_dict[id] = type
-    ids_type = temp_dict
-    for each in cout_stream:
-        if each[0] == '"' and each[-1] == '"':
-            format_str += each[1: -1]
-        elif each == 'endl':
-            format_str += '\\n'
-        else:
-            if each not in ids_type.keys():
-                if '[' in each:   # 如果是a[i]这样的
-                    dim = each.count('[')
-                    orig_id = each[:each.find('[')]
-                    if orig_id not in ids_type.keys():
-                        return
-                    type = ids_type[orig_id][:-dim] # 几维就删掉几颗*
-                else:
-                    return
-            else:
-                type = ids_type[each]
-            format = type2format(type)
-            if format is None:
-                return
-            format_str += format
-            params.append(each)
-    params_str = ', '.join(params)
-    if len(params_str) > 0:
-        params_str = ', '  + params_str
-    printf_str = f'printf("{format_str}"{params_str});'
-    return [(node.end_byte, node.start_byte - node.end_byte),
-            (node.start_byte, printf_str)]
+    info = get_stream_info(node, 'cout')
+    if info:
+        format_str, params_str = info
+        printf_str = f'printf("{format_str}"{params_str});'
+        return [(node.end_byte, node.start_byte),
+                (node.start_byte, printf_str)]
+
+def cvt_Scanf2Cin(node):
+    # scanf("%s", str) -> cin >> str;
+    params = text(node.children[1])[1: -1]
+    params = [x.replace(' ','') for x in params.split(',')[1:]] # params
+    cin_stream = ['cin']  # 输出流
+    for param in params:
+        cin_stream.append(param.replace('&',''))
+    return [(node.end_byte, node.start_byte),
+            (node.start_byte, ' >> '.join(cin_stream))]
+
+def cvt_Cin2Scanf(node):
+    # cin >> str; -> scanf("%s", str)
+    info = get_stream_info(node, 'cin')
+    if info:
+        format_str, params_str = info
+        scanf_str = f'scanf("{format_str}"{params_str});'
+        return [(node.end_byte, node.start_byte),
+                (node.start_byte, scanf_str)]

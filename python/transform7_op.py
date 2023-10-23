@@ -56,7 +56,7 @@ def cvt_RightConst2LeftConst(node):
     if len(node.children) == 3:
         [a, op, const] = [text(x) for x in node.children]
         reverse_op_dict = {'<':'>', '>=':'<=', '<=':'>=', '>':'<', '==':'==', '!=':'!='}
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{const} {reverse_op_dict[op]} {a}')]
 
 def cvt_Bigger2Smaller(node):
@@ -64,7 +64,7 @@ def cvt_Bigger2Smaller(node):
     if len(node.children) == 3:
         [a, op, b] = [text(x) for x in node.children]
         reverse_op_dict = {'>':'<', '>=':'<='}
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{b} {reverse_op_dict[op]} {a}')]
 
 def cvt_Smaller2Bigger(node):
@@ -72,5 +72,5 @@ def cvt_Smaller2Bigger(node):
     if len(node.children) == 3:
         [a, op, b] = [text(x) for x in node.children]
         reverse_op_dict = {'<':'>', '<=':'>='}
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{b} {reverse_op_dict[op]} {a}')]

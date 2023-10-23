@@ -38,4 +38,4 @@ def cvt_AddNone(node):
 
 def cvt_DelNone(node):
     # return None -> return
-    return [(node.children[1].end_byte, node.children[0].end_byte - node.children[1].end_byte)]
+    return [(node.children[1].end_byte, node.children[0].end_byte)]

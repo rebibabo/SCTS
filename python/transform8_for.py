@@ -69,7 +69,7 @@ def cvt_ForRange2While(node):
     cmp = '>' if incre.isdigit() and int(incre) < 0 else '<'
     sign = '-' if incre.isdigit() and int(incre) < 0 else '+'
     incre = abs(int(incre)) if incre.isdigit() else incre
-    return [(node.children[4].end_byte, node.start_byte - node.children[4].end_byte),
+    return [(node.children[4].end_byte, node.start_byte),
             (node.start_byte, f'{iter} = {left}\n'),
             (node.start_byte, f"{while_indent*' '}while {iter} {cmp} {right}:"),
             (node.end_byte + 1, f"\n{(while_indent+4)*' '}{iter} {sign}= {incre}\n")]

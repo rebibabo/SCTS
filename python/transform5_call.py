@@ -25,4 +25,4 @@ def cvt_MagicCall2Call(node):
     # test.__call__(args) -> test(args)
     func = node.child_by_field_name('function') 
     dot_index = func.children[1].start_byte                # dot_index为".__call__"中'.'的索引
-    return [(func.end_byte, dot_index - func.end_byte)]    # 删除.__call__
+    return [(func.end_byte, dot_index)]    # 删除.__call__

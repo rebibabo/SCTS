@@ -55,7 +55,7 @@ class CodeMarker:
                 3.1: ('update', 'left'), 3.2: ('update', 'right'), 3.3: ('update', 'augment'), 3.4: ('update', 'assignment'),
                 4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
                 5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
-                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'),
+                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'), 6.5: ('declare', 'assign_split'),
                 7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
             },
             'cpp':{
@@ -65,9 +65,9 @@ class CodeMarker:
                 3.1: ('update', 'left'), 3.2: ('update', 'right'), 3.3: ('update', 'augment'), 3.4: ('update', 'assignment'),
                 4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
                 5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
-                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'),
+                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'), 6.5: ('declare', 'assign_split'),
                 7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
-                8.1: ('cpp', 'stdc++'), 8.2: ('cpp', 'namespace'), 8.3: ('cpp', 'sync_with_false'), 8.4: ('cpp', 'struct'), 8.5: ('cpp', 'coutendl'), 8.6: ('cpp', 'cout'), 8.7: ('cpp', 'del_endl'), 8.8: ('cpp', 'printf'),
+                8.1: ('cpp', 'stdc++'), 8.2: ('cpp', 'namespace'), 8.3: ('cpp', 'sync_with_false'), 8.4: ('cpp', 'struct'), 8.5: ('cpp', 'coutendl'), 8.6: ('cpp', 'cout'), 8.7: ('cpp', 'del_endl'), 8.8: ('cpp', 'printf'), 8.9: ('cpp', 'cin'), 8.11: ('cpp', 'scanf'),
             }
         }
 
@@ -179,15 +179,15 @@ if __name__ == '__main__':
     codemarker = CodeMarker('cpp')
     code = open('test.c').read()
     print(code)
-    new_code, succ = codemarker.change_file_style([8.8], code)
+    new_code, succ = codemarker.change_file_style([8.11], code)
     if succ:
         print(new_code)
-    for style_choice in [8.7, 8.8]:
+    for style_choice in [8.11]:
         print('style_choice:',style_choice)
         codemarker.change_dir_style([style_choice], 'dataset/ProgramData', f'change/{style_choice}')
     # codemarker.get_dir_popularity([5.1], 'dataset/ProgramData/2')
 
 #[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]
-#[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9]
+#[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11]
 
 

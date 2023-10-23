@@ -95,11 +95,17 @@ def rec_DeclareNotTemp(node):
             if id in first_use and first_use[id] != dec + 1:
                 return True
 
+def rec_DeclareAssign(node):
+    if node.type == 'declaration':
+        for child in node.children:
+            if child.type == 'init_declarator':
+                return True
+
 '''==========================替换========================'''
 def cvt_DeclareMerge2Split(node, code):
     # int a, b; -> int a; int b;
     type = text(node.children[0])
-    ret = [(node.end_byte, node.start_byte - node.end_byte)]
+    ret = [(node.end_byte, node.start_byte)]
     indent = get_indent(node.start_byte, code)
     for i, child in enumerate(node.children[1: -1]):
         if child.type == ',':
@@ -119,7 +125,7 @@ def cvt_DeclareSplit2Merge(node, code):
         if len(ids) > 1:
             start_byte = type_dec_node[type][0].start_byte
             for node in type_dec_node[type]:
-                ret.append((node.end_byte, node.start_byte - node.end_byte))
+                ret.append((node.end_byte, node.start_byte))
             str = f"{type} {', '.join(type_ids_dict[type])};"
             ret.append((start_byte, str))
     return ret
@@ -132,7 +138,7 @@ def cvt_DeclareFirst(node, code):
     start_byte = len(code)
     for type, node in type_dec_node.items():
         for each in node:
-            ret.append((each.end_byte, each.start_byte - each.end_byte))
+            ret.append((each.end_byte, each.start_byte))
             start_byte = min(start_byte, each.start_byte)
     declare_list = []
     for i, (type, ids) in enumerate(type_ids_dict.items()):
@@ -180,10 +186,10 @@ def cvt_DeclareTemp(node, code):
                     ret.append((next_node.start_byte, id_node.start_byte - next_node.start_byte))
                 elif id_node.next_sibling and id_node.next_sibling.type == ';':   # 如果是c这样的最后一个元素
                     prev_node = id_node.prev_sibling
-                    ret.append((id_node.end_byte, prev_node.start_byte - id_node.end_byte))
+                    ret.append((id_node.end_byte, prev_node.start_byte))
         else:   # 删除一整行
             prev_node = each.prev_sibling
-            ret.append((each.end_byte, prev_node.end_byte - each.end_byte))
+            ret.append((each.end_byte, prev_node.end_byte))
     # 再在temp_id的所有第一次使用前的一行插入
     line_type_id_dict = {}  # 行号， 类型， 变量名
     for id in temp_id:
@@ -205,4 +211,16 @@ def cvt_DeclareTemp(node, code):
                     else:       # 如果有多个
                         dec_str = f"{type} {', '.join(ids)};\n{indent * ' '}"
                     ret.append((child.start_byte, dec_str))
+    return ret
+
+def cvt_DeclareAssignSplit(node, code):
+    # int i = 0; -> int i; \n i = 0;
+    ret = []
+    for child in node.children:
+        if child.type == 'init_declarator':
+            declarator = child.child_by_field_name('declarator')
+            value = child.child_by_field_name('value')
+            indent = get_indent(node.start_byte, code)
+            ret.append((value.end_byte, declarator.end_byte))
+            ret.append((node.end_byte, f"\n{indent*' '}{text(declarator)} = {text(value)};"))
     return ret

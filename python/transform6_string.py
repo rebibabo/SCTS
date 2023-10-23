@@ -62,7 +62,7 @@ def cvt_RightFormat2LeftF(node):
     params_list = text(node)    # (a, b)
     params = params_list[1: -1].replace(' ','').split(',')
     ret = [(node.start_byte, 'f'), 
-        (params_node.end_byte, node.end_byte - params_node.end_byte)]
+        (params_node.end_byte, node.end_byte)]
     param_index = 0
     if str.count('{') != len(params):
         return

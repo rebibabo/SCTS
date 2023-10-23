@@ -128,7 +128,7 @@ def cvt_Static2Dyn(node, code):
             else:
                 return 
             if is_delete_line:  # 删除整行
-                return [(node.end_byte, node.start_byte - node.end_byte),
+                return [(node.end_byte, node.start_byte),
                         (node.start_byte, str)]
             else:   # 例如int a, b[10];只删除b[10]，并在下一行转换成malloc
                 start_byte, end_byte = 0, 0
@@ -142,7 +142,7 @@ def cvt_Static2Dyn(node, code):
                     start_byte = child.start_byte
                 return [(end_byte, start_byte - end_byte),
                         (node.end_byte, f'\n{indent * " "}' + str)]
-            return [(node.end_byte, node.start_byte - node.end_byte),
+            return [(node.end_byte, node.start_byte),
                     (node.start_byte, str)]
         
 def cvt_Dyn2Static(node):
@@ -159,7 +159,7 @@ def cvt_Dyn2Static(node):
                     if each.type == 'pointer_expression':
                         if each.children[1].type in ['number_literal', 'identifier']:
                             size = text(each.children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{type} {id}[{size}];")]
     if rec_DynMemTwoLine(node):
         # int *p;   p = (type *)malloc(sizeof(type) * n) -> type a[n]
@@ -179,14 +179,14 @@ def cvt_Dyn2Static(node):
                         for ch in param_node.children:
                             if ch.type in ['number_literal', 'identifier']:
                                 size = text(ch)
-                        ret.append((child.end_byte, child.start_byte - child.end_byte))
+                        ret.append((child.end_byte, child.start_byte))
                         ret.append((child.start_byte, f"{type} {id}[{size}];"))
                         break
         for child in node.children:
             if child.type == 'declaration':
                 if child.child_count > 1 and child.children[1].child_count > 1:
                     if text(child.children[1].children[1]) == id:
-                        ret.append((child.end_byte, child.start_byte - child.end_byte))
+                        ret.append((child.end_byte, child.start_byte))
         return ret
 
 def cvt_Array2Pointer(node):
@@ -195,14 +195,14 @@ def cvt_Array2Pointer(node):
         # a[i] -> *(*a + i)
         id = text(node.children[0])
         index = text(node.children[1].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"*(*{id} + {index})")]
     elif dim == 2:
         # a[i][j] -> *(*(a + i) + j);
         id = text(node.children[0].children[0])
         index_1 = text(node.children[0].children[1].children[1])
         index_2 = text(node.children[1].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"*(*({id} + {index_1}) + {index_2})")]
     elif dim == 3:
         # a[i][j][k] -> *(*(*(a + i) + j) + k)
@@ -210,7 +210,7 @@ def cvt_Array2Pointer(node):
         index_1 = text(node.children[0].children[0].children[1].children[1])
         index_2 = text(node.children[0].children[1].children[1])
         index_3 = text(node.children[1].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"*(*(*({id} + {index_1}) + {index_2}) + {index_3})")]
 
 def cvt_Pointer2Array(node):

@@ -48,7 +48,7 @@ def cvt_BracketSame2NextLine(node, code):
 
 def cvt_BracketNext2SameLine(node):
     # 大括号写到同一行
-    return [(node.start_byte, node.parent.prev_sibling.end_byte - node.start_byte)]
+    return [(node.start_byte, node.parent.prev_sibling.end_byte)]
 
 def cvt_AddBlankSpace(node, code):
     # 添加空格
@@ -81,7 +81,7 @@ def cvt_AddIfForWhileBracket(node, code):
     indent = get_indent(node.start_byte, code)
     
     if '\n' not in text(node):
-        return [(statement_node.start_byte, statement_node.prev_sibling.end_byte - statement_node.start_byte),
+        return [(statement_node.start_byte, statement_node.prev_sibling.end_byte),
                 (statement_node.start_byte, f" {{\n{(indent + 4) * ' '}"), 
                 (statement_node.end_byte, f"\n{indent * ' '}}}")]
     else:

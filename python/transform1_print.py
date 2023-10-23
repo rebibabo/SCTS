@@ -58,9 +58,9 @@ def cvt_CallPrint2CallPrintWithFlush(node):
     # print(args) -> print(args, flush=True)
     args = node.child_by_field_name('arguments')
     if len(args.children) == 2:
-        return [(args.end_byte - 1, 'flush=True')]
+        return [(args.children[-1].start_byte, 'flush=True')]
     else:
-        return [(args.end_byte - 1, ', flush=True')]
+        return [(args.children[-1].start_byte, ', flush=True')]
 
 def cvt_CallPrintWithFlush2CallPrint(node):
     # print(args, flush=True) -> print(args)
@@ -74,7 +74,7 @@ def cvt_CallPrintWithFlush2CallPrint(node):
                 last_comma_index = a.end_byte    
             keyword = a.child_by_field_name('name')
             if keyword and keyword.text == b'flush':
-                return [(a.end_byte, last_comma_index - a.end_byte - 1)]
+                return [(a.end_byte, last_comma_index - 1)]
 
 def cvt_CallPrint2CallPrintWithEnd(node):
     # print(args) -> print(args, end='\n')
@@ -96,4 +96,4 @@ def cvt_CallPrintWithEndn2CallPrint(node):
                 last_comma_index = a.end_byte    
             keyword = a.child_by_field_name('name')
             if keyword and keyword.text == b'end':
-                return [(a.end_byte, last_comma_index - a.end_byte - 1)]
+                return [(a.end_byte, last_comma_index - 1)]

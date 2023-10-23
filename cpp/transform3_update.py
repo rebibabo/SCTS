@@ -52,34 +52,34 @@ def cvt_ToRight(node):
     # i++
     if rec_LeftUpdate(node):
         temp_node = node.children[0]
-        return [(temp_node.end_byte, temp_node.start_byte - temp_node.end_byte), 
+        return [(temp_node.end_byte, temp_node.start_byte), 
                 (node.end_byte, text(temp_node))]
     if rec_AugmentedCrement(node):
         temp_node = node.children[0]
         op = text(node.children[1])[0]
-        return [(node.end_byte, temp_node.end_byte - node.end_byte),
+        return [(node.end_byte, temp_node.end_byte),
                 (temp_node.end_byte, op * 2)]
     if rec_Assignment(node):
         left_param = text(node.children[0])
         op = text(node.children[2].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{left_param}{op*2}")]
 
 def cvt_ToLeft(node):
     # ++i
     if rec_RightUpdate(node):
         temp_node = node.children[1]
-        return [(temp_node.end_byte, temp_node.start_byte - temp_node.end_byte), 
+        return [(temp_node.end_byte, temp_node.start_byte), 
                 (node.start_byte, text(temp_node))]
     if rec_AugmentedCrement(node):
         temp_node = node.children[0]
         op = text(node.children[1])[0]
-        return [(node.end_byte, temp_node.end_byte - node.end_byte),
+        return [(node.end_byte, temp_node.end_byte),
                 (temp_node.start_byte, op * 2)]
     if rec_Assignment(node):
         left_param = text(node.children[0])
         op = text(node.children[2].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{op*2}{left_param}")]
 
 def cvt_ToAugment(node):
@@ -87,17 +87,17 @@ def cvt_ToAugment(node):
     if rec_LeftUpdate(node):
         op = text(node.children[0])[0]
         param = text(node.children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f"{param} {op}= 1")]
     if rec_RightUpdate(node):
         op = text(node.children[1])[0]
         param = text(node.children[0])
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f"{param} {op}= 1")]
     if rec_Assignment(node):
         param = text(node.children[0])
         op = text(node.children[2].children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{param} {op}= 1")]
 
 def cvt_ToAssignment(node):
@@ -105,15 +105,15 @@ def cvt_ToAssignment(node):
     if rec_LeftUpdate(node):
         op = text(node.children[0])[0]
         param = text(node.children[1])
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f"{param} = {param} {op} 1")]
     if rec_RightUpdate(node):
         op = text(node.children[1])[0]
         param = text(node.children[0])
-        return [(node.end_byte, node.start_byte - node.end_byte), 
+        return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f"{param} = {param} {op} 1")]
     if rec_AugmentedCrement(node):
         param = text(node.children[0])
         op = text(node.children[1])[0]
-        return [(node.end_byte, node.start_byte - node.end_byte),
+        return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{param} = {param} {op} 1")]

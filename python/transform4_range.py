@@ -40,7 +40,7 @@ def cvt_CallRange2CallRangeWithZero(node):
 def cvt_CallRangeWithZero2CallRange(node):
     # range(0,C) -> range(C)
     args = node.child_by_field_name('arguments')        # 删除第二个参数开始的位置到第一个参数开始的位置
-    return [(args.children[3].start_byte, args.start_byte - args.children[3].start_byte + 1)]
+    return [(args.children[3].start_byte, args.start_byte + 1)]
 
 def cvt_AddSliceIndex(node):
     # a[:n] -> a[0:n] or a[:-n] -> a[:len(a)-n]

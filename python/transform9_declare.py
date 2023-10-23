@@ -51,7 +51,7 @@ def cvt_Merge2Split(node):
     if len(pattern_list) != len(expression_list):
         return
     indent = get_indent(node)
-    ret = [(node.end_byte, node.start_byte - node.end_byte - 1)]
+    ret = [(node.end_byte, node.start_byte - 1)]
     for i in range(len(pattern_list)):
         ret.append((node.start_byte, f'{indent*" " if i else ""}{pattern_list[i]} = {expression_list[i]}\n'))
     return ret
@@ -64,7 +64,7 @@ def cvt_Merge2MergeSimple(node):
         return
     indent = get_indent(node)
     str = f'{" = ".join(pattern_list + [expression_list[0]])}'
-    return [(node.end_byte, node.start_byte - node.end_byte),
+    return [(node.end_byte, node.start_byte),
             (node.start_byte, str)]
 
 def cvt_Split2Merge(node):
@@ -91,13 +91,13 @@ def cvt_Split2Merge(node):
                         if pattern_str_list[i] not in pattern_list:     # pattern_list不能冲突
                             pattern_list.append(pattern_str_list[i])
                             expression_list.append(expression_str_list[i])
-                            ret.append((temp_node.end_byte, temp_node.start_byte - temp_node.end_byte))     # 删除这个声明
+                            ret.append((temp_node.end_byte, temp_node.start_byte))     # 删除这个声明
                             merge_num += 1
                 else:       # 如果是a = b
                     if pattern_str not in pattern_list:
                         pattern_list.append(pattern_str)
                         expression_list.append(expression_str)
-                        ret.append((temp_node.end_byte, temp_node.start_byte - temp_node.end_byte))
+                        ret.append((temp_node.end_byte, temp_node.start_byte))
                         merge_num += 1
                 if merge_num > 3:
                     break

@@ -53,10 +53,10 @@ def cvt_OBC(node, code):
     indent = get_indent(node.start_byte, code)
     if abc[0] is not None:  # 如果有a
         if abc[0].type != 'declaration':    
-            return [(abc[0].end_byte, abc[0].start_byte - abc[0].end_byte),
+            return [(abc[0].end_byte, abc[0].start_byte),
                     (node.start_byte, text(abc[0]) + f';\n{indent * " "}')]
         else:   # 如果是int a, b在for循环里面
-            return [(abc[0].end_byte - 1, abc[0].start_byte - abc[0].end_byte + 1),
+            return [(abc[0].end_byte - 1, abc[0].start_byte + 1),
                     (node.start_byte, text(abc[0]) + f'\n{indent * " "}')]
 
     
@@ -67,7 +67,7 @@ def cvt_AOC(node, code):
         add_bracket = cvt_AddIfForWhileBracket(node, code)
     abc = get_for_info(node)
     if abc[1] is not None:  # 如果有b
-        ret.append((abc[1].end_byte, abc[1].start_byte - abc[1].end_byte))
+        ret.append((abc[1].end_byte, abc[1].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -87,7 +87,7 @@ def cvt_ABO(node, code):
         add_bracket = cvt_AddIfForWhileBracket(node, code)
     abc = get_for_info(node)   
     if abc[2] is not None:  # 如果有c
-        ret.append((abc[2].end_byte, abc[2].start_byte - abc[2].end_byte))
+        ret.append((abc[2].end_byte, abc[2].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -107,7 +107,7 @@ def cvt_AOO(node, code):
         add_bracket = cvt_AddIfForWhileBracket(node, code)
     abc = get_for_info(node)
     if abc[1] is not None:  # 如果有b
-        ret.append((abc[1].end_byte, abc[1].start_byte - abc[1].end_byte))
+        ret.append((abc[1].end_byte, abc[1].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -117,7 +117,7 @@ def cvt_AOO(node, code):
         indent = get_indent(first_expression_node.start_byte, code)
         ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
     if abc[2] is not None:  # 如果有c
-        ret.append((abc[2].end_byte, abc[2].start_byte - abc[2].end_byte))
+        ret.append((abc[2].end_byte, abc[2].start_byte))
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
             last_expression_node = abc[3].children[-2]
         else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
@@ -137,13 +137,13 @@ def cvt_OBO(node, code):
     if abc[0] is not None:  # 如果有a
         indent = get_indent(node.start_byte, code)
         if abc[0].type != 'declaration':
-            ret.append((abc[0].end_byte, abc[0].start_byte - abc[0].end_byte))
+            ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte - abc[0].end_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))  
     if abc[2] is not None:  # 如果有c
-        ret.append((abc[2].end_byte, abc[2].start_byte - abc[2].end_byte))
+        ret.append((abc[2].end_byte, abc[2].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -165,13 +165,13 @@ def cvt_OOC(node, code):
     if abc[0] is not None:  # 如果有a
         indent = get_indent(node.start_byte, code)
         if abc[0].type != 'declaration':
-            ret.append((abc[0].end_byte, abc[0].start_byte - abc[0].end_byte))
+            ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte - abc[0].end_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))
     if abc[1] is not None:  # 如果有b
-        ret.append((abc[1].end_byte, abc[1].start_byte - abc[1].end_byte))
+        ret.append((abc[1].end_byte, abc[1].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -193,13 +193,13 @@ def cvt_OOO(node, code):
     if abc[0] is not None:  # 如果有a
         indent = get_indent(node.start_byte, code)
         if abc[0].type != 'declaration':
-            ret.append((abc[0].end_byte, abc[0].start_byte - abc[0].end_byte))
+            ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte - abc[0].end_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))
     if abc[1] is not None:  # 如果有b
-        ret.append((abc[1].end_byte, abc[1].start_byte - abc[1].end_byte))
+        ret.append((abc[1].end_byte, abc[1].start_byte))
         if abc[3] is None:
             return
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -209,7 +209,7 @@ def cvt_OOO(node, code):
         indent = get_indent(first_expression_node.start_byte, code)
         ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
     if abc[2] is not None:  # 如果有c
-        ret.append((abc[2].end_byte, abc[2].start_byte - abc[2].end_byte))
+        ret.append((abc[2].end_byte, abc[2].start_byte))
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
             last_expression_node = abc[3].children[-2]
         else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
@@ -243,7 +243,7 @@ def cvt_for(node, code):
                 if len(clause_id) == 1 and id in clause_id: # 从句里面如果有++或者赋值运算并且变量名为id，则添加c
                     c = each
                     break
-    ret = [(node.children[1].end_byte, node.children[0].start_byte - node.children[1].end_byte)]
+    ret = [(node.children[1].end_byte, node.children[0].start_byte)]
     if a:
         ret.append((a.end_byte, a.prev_sibling.end_byte - a.end_byte))
     if c:
@@ -260,7 +260,7 @@ def cvt_while(node, code):
         add_bracket = cvt_AddIfForWhileBracket(node, code)
     abc = get_for_info(node)
     child_index = 3 + (4 - abc.count(None)) - (abc[0] is not None and abc[0].type == 'declaration')
-    ret = [(node.children[child_index].end_byte, node.children[0].start_byte - node.children[child_index].end_byte)]    # 删除for(a;b;c)
+    ret = [(node.children[child_index].end_byte, node.children[0].start_byte)]    # 删除for(a;b;c)
     if abc[0] is not None:  # 如果有a
         indent = get_indent(node.start_byte, code)
         if abc[0].type != 'declaration':

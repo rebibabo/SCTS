@@ -56,7 +56,8 @@ transformation_operators = {
         'split': (rec_DeclareMerge, cvt_DeclareMerge2Split),
         'merge': (rec_DeclareSplit, cvt_DeclareSplit2Merge),
         'first': (rec_DeclareNotFirst, cvt_DeclareFirst),
-        'temp': (rec_DeclareNotTemp, cvt_DeclareTemp)
+        'temp': (rec_DeclareNotTemp, cvt_DeclareTemp),
+        'assign_split': (rec_DeclareAssign, cvt_DeclareAssignSplit)
     },
     'loop': {
         'obc': (rec_For, cvt_OBC),

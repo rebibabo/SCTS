@@ -34,11 +34,11 @@ def rec_List(node):
 def cvt_InitList2InitCallList(node):
     # [] -> list()
     # 删除[]                      加上list()
-    return [(node.end_byte, -len(node.text)), (node.end_byte, 'list()')]
+    return [(node.end_byte, node.start_byte), (node.end_byte, 'list()')]
         
 def cvt_InitCallList2InitList(node):
     # list() -> []
-    return [(node.end_byte, -len(node.text)), (node.end_byte, '[]')]
+    return [(node.end_byte, node.start_byte), (node.end_byte, '[]')]
 
 def cvt_List2CallList(node):
     # [...] -> list([...])
@@ -47,5 +47,5 @@ def cvt_List2CallList(node):
 def cvt_CallList2List(node):
     # list([...]) -> [...]
     args = node.child_by_field_name('arguments')
-    return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除list( 
+    return [(args.children[1].start_byte, node.start_byte),   # 删除list( 
             (args.children[2].end_byte, -1)]            # 删除)

@@ -26,10 +26,10 @@ def cvt_IntVoidReturn(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 3 or 'void' not in params_text:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '(void)'))
     if ret_node is None:
         if len(node.children[2].children) > 1:
@@ -41,13 +41,13 @@ def cvt_IntVoid(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 3 or 'void' not in params_text:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '(void)'))
     if ret_node:
-        ret.append((ret_node.end_byte, ret_node.start_byte - ret_node.end_byte))
+        ret.append((ret_node.end_byte, ret_node.start_byte))
     return ret 
 
 def cvt_IntReturn(node):
@@ -55,10 +55,10 @@ def cvt_IntReturn(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 2:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '()'))
     if ret_node is None:
         if len(node.children[2].children) > 1:
@@ -70,13 +70,13 @@ def cvt_Int(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 2:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '()'))
     if ret_node:
-        ret.append((ret_node.end_byte, ret_node.start_byte - ret_node.end_byte))
+        ret.append((ret_node.end_byte, ret_node.start_byte))
     return ret 
 
 def cvt_IntArgReturn(node):
@@ -84,10 +84,10 @@ def cvt_IntArgReturn(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 5 or 'arg' not in params_text:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '(int argc, char *argv[])'))
     if ret_node is None:
         if len(node.children[2].children) > 1:
@@ -99,13 +99,13 @@ def cvt_IntArg(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'int':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'int'))
     if params_node.child_count != 5 or 'arg' not in params_text:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '(int argc, char *argv[])'))
     if ret_node:
-        ret.append((ret_node.end_byte, ret_node.start_byte - ret_node.end_byte))
+        ret.append((ret_node.end_byte, ret_node.start_byte))
     return ret 
 
 def cvt_VoidArg(node):
@@ -113,13 +113,13 @@ def cvt_VoidArg(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'void':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'void'))
     if params_node.child_count != 5 or 'arg' not in params_text:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '(int argc, char *argv[])'))
     if ret_node:
-        ret.append((ret_node.end_byte, ret_node.start_byte - ret_node.end_byte))
+        ret.append((ret_node.end_byte, ret_node.start_byte))
     return ret 
 
 def cvt_Void(node):
@@ -127,11 +127,11 @@ def cvt_Void(node):
     ret = []
     ret_type_node, params_node, ret_node, ret_type_text, params_text, ret_text = getMainInfo(node)
     if ret_type_text != 'void':
-        ret.append((ret_type_node.end_byte, ret_type_node.start_byte - ret_type_node.end_byte))
+        ret.append((ret_type_node.end_byte, ret_type_node.start_byte))
         ret.append((ret_type_node.start_byte, 'void'))
     if params_node.child_count != 2:
-        ret.append((params_node.end_byte, params_node.start_byte - params_node.end_byte))
+        ret.append((params_node.end_byte, params_node.start_byte))
         ret.append((params_node.start_byte, '()'))
     if ret_node:
-        ret.append((ret_node.end_byte, ret_node.start_byte - ret_node.end_byte))
+        ret.append((ret_node.end_byte, ret_node.start_byte))
     return ret 

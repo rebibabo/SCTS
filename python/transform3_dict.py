@@ -34,11 +34,11 @@ def rec_Dict(node):
 def cvt_InitDict2InitCallDict(node):
     # {} -> dict()
     # 删除{}                      加上dict()
-    return [(node.end_byte, -len(node.text)), (node.end_byte, 'dict()')]
+    return [(node.end_byte, node.start_byte), (node.end_byte, 'dict()')]
     
 def cvt_InitCallDict2InitDict(node):
     # dict() -> {}
-    return [(node.end_byte, -len(node.text)), (node.end_byte, '{}')]
+    return [(node.end_byte, node.start_byte), (node.end_byte, '{}')]
 
 def cvt_Dict2CallDict(node):
     # {...} -> dict({...})
@@ -47,5 +47,5 @@ def cvt_Dict2CallDict(node):
 def cvt_CallDict2Dict(node):
     # dict({...}) -> {...}
     args = node.child_by_field_name('arguments')
-    return [(args.children[1].start_byte, node.start_byte - args.children[1].start_byte),   # 删除dict( 
+    return [(args.children[1].start_byte, node.start_byte),   # 删除dict( 
             (args.children[2].end_byte, -1)]

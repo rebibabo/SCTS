@@ -71,7 +71,7 @@ def cvt_camel(node):            # aaaBbb
     if len(subtoken) > 1:
         for t in subtoken[1:]:
             new_id += t[0].upper() + t[1:]
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
 def cvt_initcap(node):          # AaaBbb
     id = text(node)
@@ -80,30 +80,30 @@ def cvt_initcap(node):          # AaaBbb
     if len(subtoken) > 1:
         for t in subtoken:
             new_id += t[0].upper() + t[1:]
-        return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+        return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
         
 def cvt_underscore(node):       # aaa_bbb
     id = text(node)
     subtoken = sub_token(id)
     new_id = '_'.join(subtoken)
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
 def cvt_init_underscore(node):  # _aaa_bbb
     id = text(node)
     new_id = '_' + id
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
 def cvt_init_dollar(node):      # $aaa_bbb
     id = text(node)
     new_id = '$' + id
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
 def cvt_upper(node):            # AAABBB
     id = text(node)
     new_id = id.upper()
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
 def cvt_lower(node):            # aaabbb
     id = text(node)
     new_id = id.lower()
-    return [(node.end_byte, -len(id)), (node.start_byte, new_id)]
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
