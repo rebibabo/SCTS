@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import os
+from graphviz import Digraph
 from tree_sitter import Parser, Language
 from utils import replace_from_blob, traverse_rec_func, get_parameter_count
 
@@ -210,6 +211,7 @@ if __name__ == '__main__':
     codemarker = CodeMarker('c')
     code = open('test.c').read()
     print(code)
+    codemarker.see_tree(code)
     # new_code, succ = codemarker.change_file_style([8.11], code)
     # if succ:
     #     print(new_code)
