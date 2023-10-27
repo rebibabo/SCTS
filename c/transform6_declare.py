@@ -60,11 +60,9 @@ def get_indent(start_byte, code):
 def rec_DeclareMerge(node):
     # int a, b=0;
     if node.type == 'declaration':
-        declarator_num = 0
-        for child in node.children:
-            if child.type == 'identifier':
-                declarator_num += 1
-        return declarator_num > 1
+        ids = set()
+        contain_id(node, ids)
+        return len(ids) > 1
 
 def rec_DeclareSplit(node):
     # int a; \n int b=0;
@@ -110,10 +108,7 @@ def cvt_DeclareMerge2Split(node, code):
     for i, child in enumerate(node.children[1: -1]):
         if child.type == ',':
             continue
-        if i == 0:
-            ret.append((node.start_byte, f"{type} {text(child)};\n"))
-        else:
-            ret.append((node.start_byte, f"{indent * ' '}{type} {text(child)};\n"))
+        ret.append((node.start_byte, f"\n{indent * ' '}{type} {text(child)};"))
     return ret
 
 def cvt_DeclareSplit2Merge(node, code):

@@ -101,8 +101,7 @@ class CodeMarker:
                     for key, value in style_num.items():
                         tot_style_num[key] += value
                     pbar.update()
-        print(tot_style_num)
-                    
+        print(tot_style_num)            
 
     def change_file_style(self, style_choice, code):
         orig_code = code
@@ -173,21 +172,56 @@ class CodeMarker:
                             f_w.write(new_code)
                     pbar.set_description(f'Successful Rate: {succ_num/try_num*100:.2f}%')
                     pbar.update()
+        # with open('conv_rate.txt', 'a') as f:
+        #     f.write(f"{style_choice}:{succ_num/try_num*100:.2f}\n")
 
+    def see_tree(self, code):
+        tree = self.parser.parse(bytes(code, 'utf8'))
+        root_node = tree.root_node
+        dot = Digraph(comment='AST Tree')
+        self.create_ast_tree(dot, root_node)
+        dot.render('ast_tree', view=True)
+
+    def get_node_info(self, node, is_leaf=False):
+        if node.type == ':':
+            info = 'colon' + str(node.start_point) + str(node.end_point)
+        elif is_leaf:
+            info = node.text.decode('utf-8') + str(node.start_point) + str(node.end_point)
+        else:
+            info = str(node.type) + str(node.start_point) + str(node.end_point)
+        return info
+
+    def create_ast_tree(self, dot, node):
+        node_info = self.get_node_info(node)
+        dot.node(node_info, shape='rectangle', label=node.type)
+        if not node.child_count:
+            leaf_info = self.get_node_info(node, is_leaf=True)
+            dot.node(leaf_info, shape='ellipse', label=node.text.decode('utf-8'))
+            if node.text.decode('utf-8') != node.type:
+                dot.edge(node_info, leaf_info)
+            return
+        for child in node.children:
+            self.create_ast_tree(dot, child)
+            child_info = self.get_node_info(child)
+            dot.edge(node_info, child_info)
+        return id
 
 if __name__ == '__main__':
-    codemarker = CodeMarker('cpp')
+    codemarker = CodeMarker('c')
     code = open('test.c').read()
     print(code)
-    new_code, succ = codemarker.change_file_style([8.11], code)
-    if succ:
-        print(new_code)
-    for style_choice in [8.11]:
-        print('style_choice:',style_choice)
-        codemarker.change_dir_style([style_choice], 'dataset/ProgramData', f'change/{style_choice}')
+    # new_code, succ = codemarker.change_file_style([8.11], code)
+    # if succ:
+    #     print(new_code)
+    # for style_choice in [8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]:
+    #     print('style_choice:',style_choice)
+    #     codemarker.change_dir_style([style_choice], 'dataset/gcjpy_format', f'change/{style_choice}')
     # codemarker.get_dir_popularity([5.1], 'dataset/ProgramData/2')
 
 #[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]
 #[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11]
 
+# for style in [0.4, 1.2, 1.3, 1.4, 2.3, 3.1, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.3, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.5, 8.6, 8.7, 8.8, 8.11]:
+#     new_code, succ = codemarker.change_file_style(style, code)
+#     input(new_code)
 

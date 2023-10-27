@@ -56,7 +56,7 @@ def cvt_OBC(node, code):
             return [(abc[0].end_byte, abc[0].start_byte),
                     (node.start_byte, text(abc[0]) + f';\n{indent * " "}')]
         else:   # 如果是int a, b在for循环里面
-            return [(abc[0].end_byte - 1, abc[0].start_byte + 1),
+            return [(abc[0].end_byte - 1, abc[0].start_byte),
                     (node.start_byte, text(abc[0]) + f'\n{indent * " "}')]
 
     
@@ -140,7 +140,7 @@ def cvt_OBO(node, code):
             ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))  
     if abc[2] is not None:  # 如果有c
         ret.append((abc[2].end_byte, abc[2].start_byte))
@@ -168,7 +168,7 @@ def cvt_OOC(node, code):
             ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))
     if abc[1] is not None:  # 如果有b
         ret.append((abc[1].end_byte, abc[1].start_byte))
@@ -196,7 +196,7 @@ def cvt_OOO(node, code):
             ret.append((abc[0].end_byte, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f';\n{indent * " "}'))
         else:
-            ret.append((abc[0].end_byte - 1, abc[0].start_byte + 1))
+            ret.append((abc[0].end_byte - 1, abc[0].start_byte))
             ret.append((node.start_byte, text(abc[0]) + f'\n{indent * " "}'))
     if abc[1] is not None:  # 如果有b
         ret.append((abc[1].end_byte, abc[1].start_byte))

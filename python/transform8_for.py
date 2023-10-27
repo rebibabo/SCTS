@@ -50,6 +50,8 @@ def cvt_AddEnumerate(node):
 def cvt_ForRange2While(node):
     # for i in range() -> while
     iter = text(node.children[1])
+    if node.parent.parent is None:
+        return
     while_lines = text(node.parent.parent).split('\n')
     while_indent = len(while_lines[1]) - len(while_lines[1].lstrip())   # 计算for循环这一行的缩进
     range_str = text(node.children[3].children[1])
