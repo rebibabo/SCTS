@@ -1,8 +1,14 @@
 from tqdm import tqdm
 import os
-from graphviz import Digraph
 from tree_sitter import Parser, Language
-from utils import replace_from_blob, traverse_rec_func, get_parameter_count
+from utils import *
+
+try:
+    from graphviz import Digraph
+except:
+    os.system('sudo apt-get install graphviz graphviz-doc')
+    os.system('pip install graphviz')
+    from graphviz import Digraph
 
 class CodeMarker:
     def __init__(self, language):
@@ -180,38 +186,22 @@ class CodeMarker:
         tree = self.parser.parse(bytes(code, 'utf8'))
         root_node = tree.root_node
         dot = Digraph(comment='AST Tree')
-        self.create_ast_tree(dot, root_node)
-        dot.render('ast_tree', view=True)
+        create_ast_tree(dot, root_node)
+        dot.render('ast_tree')
 
-    def get_node_info(self, node, is_leaf=False):
-        if node.type == ':':
-            info = 'colon' + str(node.start_point) + str(node.end_point)
-        elif is_leaf:
-            info = node.text.decode('utf-8') + str(node.start_point) + str(node.end_point)
-        else:
-            info = str(node.type) + str(node.start_point) + str(node.end_point)
-        return info
-
-    def create_ast_tree(self, dot, node):
-        node_info = self.get_node_info(node)
-        dot.node(node_info, shape='rectangle', label=node.type)
-        if not node.child_count:
-            leaf_info = self.get_node_info(node, is_leaf=True)
-            dot.node(leaf_info, shape='ellipse', label=node.text.decode('utf-8'))
-            if node.text.decode('utf-8') != node.type:
-                dot.edge(node_info, leaf_info)
-            return
-        for child in node.children:
-            self.create_ast_tree(dot, child)
-            child_info = self.get_node_info(child)
-            dot.edge(node_info, child_info)
-        return id
+    def tokenize(self, code):
+        tree = self.parser.parse(bytes(code, 'utf8'))
+        root_node = tree.root_node
+        tokens = []
+        tokenize_help(root_node, tokens)
+        return tokens
 
 if __name__ == '__main__':
     codemarker = CodeMarker('c')
     code = open('test.c').read()
     print(code)
     codemarker.see_tree(code)
+    print(codemarker.tokenize(code))
     # new_code, succ = codemarker.change_file_style([8.11], code)
     # if succ:
     #     print(new_code)

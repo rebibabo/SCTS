@@ -25,25 +25,6 @@ def replace_from_blob(operation, blob):
             diff += len(op[1])
     return blob
 
-
-def traverse_all_children(node, results):
-    if node.is_named:
-        results.append(node)
-    if not node.children:
-        return
-    for n in node.children:
-        traverse_all_children(n, results)
-
-
-def traverse_type(node, results, kind):
-    if node.type == kind:
-        results.append(node)
-    if not node.children:
-        return
-    for n in node.children:
-        traverse_type(n, results, kind)
-
-
 def traverse_rec_func(node, results, func, code=None):
     # 遍历整个AST树，返回符合func的节点列表results
     if get_parameter_count(func) == 1:
@@ -56,13 +37,35 @@ def traverse_rec_func(node, results, func, code=None):
         return
     for n in node.children:
         traverse_rec_func(n, results, func)
-    
 
-def traverse_cvt_func(node, results, func):
-    cvted = func(node)
-    if cvted:
-        results.append(cvted)
+def tokenize_help(node, tokens):
+    # 遍历整个AST树，返回符合func的节点列表results
     if not node.children:
+        tokens.append(text(node))
         return
     for n in node.children:
-        traverse_cvt_func(n, results, func)
+        tokenize_help(n, tokens)
+
+def get_node_info(node, is_leaf=False):
+    if node.type == ':':
+        info = 'colon' + str(node.start_byte) + ',' + str(node.end_byte)
+    elif is_leaf:
+        info = node.text.decode('utf-8').replace(':', 'colon') + str(node.start_byte) + ',' + str(node.end_byte)
+    else:
+        info = str(node.type).replace(':', 'colon') + str(node.start_byte) + ',' + str(node.end_byte)
+    return info
+
+def create_ast_tree(dot, node):
+    node_info = get_node_info(node)
+    dot.node(node_info, shape='rectangle', label=node.type)
+    if not node.child_count:
+        leaf_info = get_node_info(node, is_leaf=True)
+        dot.node(leaf_info, shape='ellipse', label=node.text.decode('utf-8'))
+        if node.text.decode('utf-8') != node.type:
+            dot.edge(node_info, leaf_info)
+        return
+    for child in node.children:
+        create_ast_tree(dot, child)
+        child_info = get_node_info(child)
+        dot.edge(node_info, child_info)
+    return id
