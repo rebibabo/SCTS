@@ -40,6 +40,7 @@ If you want to get AST's pdf, you can use:
 ```
 scts.see_tree(code)
 ```
+![捕获](https://github.com/rebibabo/SCTS/assets/80667434/70b5232b-75a9-4807-9b34-386de5cfe2ae)
 
 If you want to get code's tokens, you can use:
 ```
