@@ -51,3 +51,4 @@ If you want to generate CFG of C program, you can run CFG.py
 ```
 python CFG.py
 ```
+![捕获](https://github.com/rebibabo/SCTS/assets/80667434/ef06409b-4cb9-45ed-be69-4b28760546ce)
