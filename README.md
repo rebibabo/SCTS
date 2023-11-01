@@ -46,3 +46,8 @@ If you want to get code's tokens, you can use:
 ```
 scts.tokenize(code)
 ```
+
+If you want to generate CFG of C program, you can run CFG.py
+```
+python CFG.py
+```

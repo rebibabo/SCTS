@@ -46,7 +46,7 @@ def tokenize_help(node, tokens):
     for n in node.children:
         tokenize_help(n, tokens)
 
-def get_node_info(node, is_leaf=False):
+def get_node_info_ast(node, is_leaf=False):
     if node.type == ':':
         info = 'colon' + str(node.start_byte) + ',' + str(node.end_byte)
     elif is_leaf:
@@ -56,16 +56,16 @@ def get_node_info(node, is_leaf=False):
     return info
 
 def create_ast_tree(dot, node):
-    node_info = get_node_info(node)
+    node_info = get_node_info_ast(node)
     dot.node(node_info, shape='rectangle', label=node.type)
     if not node.child_count:
-        leaf_info = get_node_info(node, is_leaf=True)
+        leaf_info = get_node_info_ast(node, is_leaf=True)
         dot.node(leaf_info, shape='ellipse', label=node.text.decode('utf-8'))
         if node.text.decode('utf-8') != node.type:
             dot.edge(node_info, leaf_info)
         return
     for child in node.children:
         create_ast_tree(dot, child)
-        child_info = get_node_info(child)
+        child_info = get_node_info_ast(child)
         dot.edge(node_info, child_info)
     return id
