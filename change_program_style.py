@@ -75,6 +75,15 @@ class SCTS:
                 6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'), 6.5: ('declare', 'assign_split'),
                 7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'),
                 8.1: ('cpp', 'stdc++'), 8.2: ('cpp', 'namespace'), 8.3: ('cpp', 'sync_with_false'), 8.4: ('cpp', 'struct'), 8.5: ('cpp', 'coutendl'), 8.6: ('cpp', 'cout'), 8.7: ('cpp', 'del_endl'), 8.8: ('cpp', 'printf'), 8.9: ('cpp', 'cin'), 8.11: ('cpp', 'scanf'),
+            },
+            'java':{
+                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'), 0.8: ('var', 'invichar'),
+                1.1: ('op', 'augmented_assignment'), 1.2: ('op', 'assignment'), 1.3: ('op', 'test_left_const'), 1.4:('op', 'smaller'), 1.5:('op', 'bigger'),
+                2.1: ('update', 'left'), 2.2: ('update', 'right'), 2.3: ('update', 'augment'), 2.4: ('update', 'assignment'),
+                3.1: ('string', 'new_string'), 3.2: ('string', 'string'), 3.3: ('string', 'add'),
+                4.1: ('bool', 'not_equal'), 4.2: ('bool', 'equal'), 4.3: ('bool', 'single'),
+                5.1: ('loop', 'obc'), 5.2: ('loop', 'aoc'), 5.3: ('loop', 'abo'), 5.4: ('loop', 'aoo'), 5.5: ('loop', 'obo'), 5.6: ('loop', 'ooc'), 5.7: ('loop', 'ooo'), 5.8: ('loop', 'for'), 5.9: ('loop', 'while'),
+                6.1: ('array', 'index_zero'), 6.2: ('array', 'index'), 6.3: ('array', 'size'), 6.4: ('array', 'is_empty'),
             }
         }
 
@@ -153,10 +162,10 @@ class SCTS:
                     new_code, succ = self.change_file_style(style_choice, code)
                     try_num += 1
                     if succ:
-                        # print('='*40)
-                        # input(code)
-                        # print('-'*30)
-                        # input(new_code)
+                        print('='*40)
+                        input(code)
+                        print('-'*30)
+                        input(new_code)
                         succ_num += 1
                         if output_choice == 0 or output_choice == 1:
                             output_file = file_path.replace(dir_path, os.path.join(output_path, 'succ'))
@@ -197,23 +206,19 @@ class SCTS:
         return tokens
 
 if __name__ == '__main__':
-    scts = SCTS('c')
-    code = open('test.c').read()
-    print(code)
+    scts = SCTS('java')
+    code = open('test.java').read()
     scts.see_tree(code)
-    print(scts.tokenize(code))
-    # new_code, succ = scts.change_file_style([8.11], code)
-    # if succ:
-    #     print(new_code)
-    # for style_choice in [8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]:
+    print(code)
+    new_code, succ = scts.change_file_style([6.1], code)
+    if succ:
+        print(new_code)
+    # for style_choice in [7.1]:
     #     print('style_choice:',style_choice)
-    #     scts.change_dir_style([style_choice], 'dataset/gcjpy_format', f'change/{style_choice}')
+    #     scts.change_dir_style([style_choice], 'dataset/java/0', f'change/{style_choice}')
     # scts.get_dir_popularity([5.1], 'dataset/ProgramData/2')
 
-#[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]
-#[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11]
-
-# for style in [0.4, 1.2, 1.3, 1.4, 2.3, 3.1, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.3, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.5, 8.6, 8.7, 8.8, 8.11]:
-#     new_code, succ = codemarker.change_file_style(style, code)
-#     input(new_code)
-
+#python:[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4]
+#c     :[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9]
+#cpp   :[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11]
+#java  :[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.1, 6.2, 6.3, 6.4]
