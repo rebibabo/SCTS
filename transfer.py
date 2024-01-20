@@ -12,6 +12,7 @@ from transform.transform_var import *
 from transform.transform_bracket import *
 from transform.transform_augmented_assignment import *
 from transform.transform_cmp import *
+from transform.transform_for_update import *
 
 class IST:
     def __init__(self, language):
@@ -45,6 +46,7 @@ class IST:
             '3.1': While_Bracket_Core, '3.2': While_NBracket_Core,
             '4.1': Augmented_Assignment_Core, '4.2': NAugmented_Assignment_Core,    
             '5.1': Bigger_Core, '5.2': Smaller_Core, '5.3': Equal_Core, '5.4': NEqual_Core,                                                           
+            '6.1': Left_Uqdate_Core, '6.2': Right_Uqdate_Core, '6.3': Augmented_Uqdate_Core, '6.4': Assignment_Uqdate_Core 
         }
 
         self.need_bracket = ['12.4']
