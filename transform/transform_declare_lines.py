@@ -96,7 +96,7 @@ class Decalare_Line_Merge_Core(Decalare_Line_Core):
                     opts.append((node.end_byte, node.start_byte))
                 str = f"{type} {', '.join(type_ids_dict[type])};"
                 opts.append((start_byte, str))
-        return opts
+        self.operations.extend(opts)
     
     def count(self):
         check_func = self.check
