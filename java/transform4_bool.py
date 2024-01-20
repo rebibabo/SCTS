@@ -1,0 +1,64 @@
+from utils import text
+
+'''==========================匹配========================'''
+def rec_EqualBool(node):
+    # true == a or a == true
+    if node.type == 'binary_expression':
+        if text(node.children[0]) in ['true', 'false'] or text(node.children[2]) in ['true', 'false']:
+            if text(node.children[1]) == '==':
+                return True
+
+def rec_NotEqualBool(node):
+    # true != a or a != true
+    if node.type == 'binary_expression':
+        if text(node.children[0]) in ['true', 'false'] or text(node.children[2]) in ['true', 'false']:
+            if text(node.children[1]) == '!=':
+                return True
+
+def rec_Bool(node):
+    # a == true or a != false
+    if node.type == 'binary_expression':
+        if text(node.children[0]) in ['true', 'false'] or text(node.children[2]) in ['true', 'false']:
+            return True
+
+def match_Bool(node):
+    # !a
+    if node.type == 'unary_expression':
+        return True
+
+'''==========================替换========================'''
+def cvt_Equal2NotEqual(node):
+    # a == true -> a != false
+    left = text(node.child_by_field_name('left'))
+    right = text(node.child_by_field_name('right'))
+    if left in ['true', 'false']:
+        right = 'false' if left == 'true' else 'true'
+        left = right
+    elif right in ['true', 'false']:
+        right = 'false' if right == 'true' else 'true'
+    new_str = f'{left} != {right}'
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_str)]
+
+def cvt_NotEqual2Equal(node):
+    # a != true -> a == false
+    left = text(node.child_by_field_name('left'))
+    right = text(node.child_by_field_name('right'))
+    if left in ['true', 'false']:
+        right = 'false' if left == 'true' else 'true'
+        left = right
+    elif right in ['true', 'false']:
+        right = 'false' if right == 'true' else 'true'
+    new_str = f'{left} == {right}'
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_str)]
+
+def cvt_Binary2Single(node):
+    # a == false -> !a
+    left = text(node.child_by_field_name('left'))
+    right = text(node.child_by_field_name('right'))
+    if left in ['true', 'false']:
+        right = 'false' if left == 'true' else 'true'
+        left = right
+    elif right in ['true', 'false']:
+        right = 'false' if right == 'true' else 'true'
+    new_str = f'!{left}'
+    return [(node.end_byte, node.start_byte), (node.start_byte, new_str)]

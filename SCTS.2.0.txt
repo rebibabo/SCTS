@@ -1,0 +1,84 @@
+1. 修改了change_program_file.py的change_file_style函数中的:
+replace_from_blob(operations, format_code.encode('utf-8')).decode('utf-8')
+在utils.py中的replace_from_blob中增加了encode，防止注释中的非ascii字符导致字节偏移量错误
+
+2. 增加了check_syntax函数用来检查语法错误，并对四个语言，几万条代码进行了测试，修复了大量语法错误，处理了各种边界条件
+
+3. 增加了format函数，用来将代码规范化，解决缩进不一致问题
+
+下面是各个语言修改的内容
+
+C/C++
+1. transform0_var
+    a. 增加了关键词，防止替换后与关键词冲突，并且限制了变量名parent类型为：
+        ["function_definition", "declaration", "argument_list", "init_declarator", "binary_expression", "return_statement"]
+    b. 在各个转换cvt函数前，增加了is判断是否能够转换
+    c. 替换后的变量名不能是数字
+2. transform1_blank
+    a. 修改了rec_IfForWhileNoBracket判断if while for是否没有花括号的方式，为遍历children，如果有节点是compound_statement则返回False, parent类型也增加了else_clause
+    b. cvt_BracketNext2SameLine中增加判断prev_sibling的类型是否是注释，因为在注释后加花括号是无效的
+    c. 完全修改了cvt_AddIfForWhileBracket函数
+3. transform3_update
+    a. 在rec中添加判断parent类型是否为下面几种情况，排除a[++i]、*p(++i)、a=++i
+        ['subscript_expression', 'argument_list', 'assignment_expression']
+4. transform5_array
+    a. 修改了get_pointer_dim函数，判断子节点有多少类型为pointer_expression确定维数
+    b. 增加了get_size函数用来获取sizeof(x)中的x的大小
+    c. 增加了is_nest_array通过栈判断一个数组是否是例如a[b[2]]这种嵌套型的
+    d. 增加了get_left_id获取*(a + i)最左边的identifier
+    e. 在rec_Array中新加了两重判断，父节点类型不在下面中
+        ['subscript_expression', 'pointer_expression', 'comma_expression']
+       子节点类型不是
+       ['call_expression', 'field_expression', 'parenthesized_expression']
+       排除掉char *(a)[n]、a[b[i]]、&a[n]、x.a[i]等情况
+    f. rec_Pointer中增加pointer_expression不是&表达式的情况
+    g. cvt_Static2Dyn中忽略了struct A {} a[10];情况
+    h. cvt_Array2Pointer和cvt_Pointer2Array修改了获取id，index的方式
+5. transform6_declare
+    a. 设置了neglect_list忽略清单，不考虑类型名、结构体、const、static等
+    b. 修改了get_declare_info，增加对const和static变量类型的判断
+    c. 增加了get_type函数用来获取变量名的类型
+    d. rec_DeclareMerge忽略const和static
+6. transform7_loop
+    a. rec_For中排除父节点类型为labeled_statement的标签语句
+    b. 每一个cvt函数前都加上增加对父节点是否是没有花括号的if、while、for、else，如果是则添加括号
+    c. 每一个cvt在转换前加上判断，例如要转换为obc，就要检查a是否存在，如果存在才转换
+    d. 修改了cvt_while，之前存在错位问题，转换失败代码为whilef{}，现已经修复
+7. transform8_cpp
+    a. 修改rec_MainWithoutSync中获取main函数主体的方式为hchild_by_field_name('body')
+    b. rec_StructDeclare中加上一层判断，node不存在body节点，类似于struct Student{} std;的struct不能删除
+    c. 修改cvt_Printf2CoutEndl和cvt_Printf2Cout中获取params的方法，并且忽略三元表达式，cout_stream中删除了'',""的情况
+    d. 在cvt_Scanf2Cin中的cin_stream删除了"
+
+python
+1. transform0_var
+    a. 增加了关键词，防止替换后与关键词冲突，替换后的变量名不能是数字
+2. transform2_list
+    a. 修复了cvt_InitList2InitCallList和cvt_InitCallList2InitList的bug，将end_byte改为了start_byte
+3. transform3_dict
+    a. 修复了cvt_InitDict2InitCallDict和cvt_InitCallDict2InitDict的bug，将end_byte改为了start_byte
+4. transform6_string
+    a. cvt_single_quotation和cvt_double_quotation加上了判断，不替换'''comment'''和"""comment"""
+5. transform8_for
+    a. 在rec_ForRange中增加了一个功能，将所有的identifier存入set中
+    b. 在cvt_ForRange2While中，加入code参数，前面添加了clear_identifier函数，如果code是新的，则将已有的代码的变量名清零
+    c. 修改了cvt_ForRange2While的代码，使用child_by_field_name获取节点，并扩充了转换的范围，将for a in x转换为了
+        i = 0
+        while i < len(x):
+            a = x[i]
+            ...
+            i += 1
+        其中的i是从备选的['i', 'j', 'k', 'l', 'm', 'n', '_', 'x', 'y', 'z', 't', 'u', 'v', 'w']中获取，且不能和identifier冲突
+    d. 删除其余的转换
+6. transform9_declare
+    a. 修改了cvt_Merge2Split，将原先增加的字符串append到ret变成先生成new_str再一次性加入，解决了indent的bug
+    b. 删除其余的转换
+
+java
+1. transform0_var
+    a. 增加了关键词，防止替换后与关键词冲突，替换后的变量名不能是数字，但是由于decode问题，不可见字符不能解码，仍需解决
+2. transform3_string
+    a. 在rec_NewString中增加判断，New String()中的参数必须是string_literal类型
+    b. 修改了cvt_Concat2Add函数
+3. transform4_bool
+    a. 修改了cvt_Equal2NotEqual和cvt_NotEqual2Equal，将修改后的字符串new_str一整个插入代码
