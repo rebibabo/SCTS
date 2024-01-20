@@ -66,6 +66,14 @@ class Left_Uqdate_Core(For_Update_Core):
             opts = [(node.end_byte, node.start_byte),
                     (node.start_byte, f"{op*2}{left_param}")]
         self.operations.extend(opts)
+    
+    def count(self):
+        check_func = self.check
+        self.check = self.check_left
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
 
 class Right_Uqdate_Core(For_Update_Core):
     def __init__(self, root, lang):
@@ -92,6 +100,14 @@ class Right_Uqdate_Core(For_Update_Core):
             opts = [(node.end_byte, node.start_byte),
                     (node.start_byte, f"{left_param}{op*2}")]
         self.operations.extend(opts)
+    
+    def count(self):
+        check_func = self.check
+        self.check = self.check_right
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
 
 class Assignment_Uqdate_Core(For_Update_Core):
     def __init__(self, root, lang):
@@ -121,6 +137,14 @@ class Assignment_Uqdate_Core(For_Update_Core):
         
         self.operations.extend(opts)
 
+    def count(self):
+        check_func = self.check
+        self.check = self.check_assignment
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
+
 class Augmented_Uqdate_Core(For_Update_Core):
     def __init__(self, root, lang):
         super().__init__(root, lang)
@@ -147,3 +171,11 @@ class Augmented_Uqdate_Core(For_Update_Core):
             opts = [(node.end_byte, node.start_byte),
                     (node.start_byte, f"{param} {op}= 1")]
         self.operations.extend(opts)
+    
+    def count(self):
+        check_func = self.check
+        self.check = self.check_augmented
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)

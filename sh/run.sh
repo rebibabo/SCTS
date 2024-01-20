@@ -1,7 +1,7 @@
-lang=java
+lang=c
 task=trans
 scope=one
-style='6.1'
+style='7.2'
 
 cd ..
 python transfer.py \
