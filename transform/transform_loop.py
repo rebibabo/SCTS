@@ -243,7 +243,7 @@ class Loop_Inf_Core(Loop_Core):
     def __init__(self, root, lang):
         super().__init__(root, lang)
 
-class Loop_While_Inf(Loop_Inf_Core):
+class Loop_While_Inf_Core(Loop_Inf_Core):
     def __init__(self, root, lang):
         super().__init__(root, lang)
         self.opposite = {
