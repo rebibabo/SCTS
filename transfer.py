@@ -12,7 +12,7 @@ from transform.transform_var import *
 from transform.transform_bracket import *
 from transform.transform_augmented_assignment import *
 from transform.transform_cmp import *
-from transform.transform_for_update import *
+from transform.transform_for import *
 from transform.transform_declare import *
 
 class IST:
@@ -50,7 +50,9 @@ class IST:
             '6.1': Left_Uqdate_Core, '6.2': Right_Uqdate_Core, '6.3': Augmented_Uqdate_Core, '6.4': Assignment_Uqdate_Core,
             '7.1': Decalare_Line_Merge_Core, '7.2': Decalare_Line_Split_Core,
             '8.1': Decalare_Position_First, '8.2': Decalare_Position_Temp,
-            '9.1': Decalare_Assign_Merge_Core, '9.2': Decalare_Assign_Split_Core
+            '9.1': Decalare_Assign_Merge_Core, '9.2': Decalare_Assign_Split_Core,
+            '10.1': For_Format_OBC_Core, '10.2': For_Format_AOC_Core, '10.3': For_Format_ABO_Core, '10.4': For_Format_AOO_Core, '10.5': For_Format_OBO_Core, '10.6': For_Format_OOC_Core, '10.7': For_Format_OOO_Core,
+            
         }
 
         self.need_bracket = ['12.4']
