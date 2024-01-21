@@ -13,8 +13,7 @@ from transform.transform_bracket import *
 from transform.transform_augmented_assignment import *
 from transform.transform_cmp import *
 from transform.transform_for_update import *
-from transform.transform_declare_lines import *
-from transform.transform_declare_position import *
+from transform.transform_declare import *
 
 class IST:
     def __init__(self, language):
@@ -50,7 +49,8 @@ class IST:
             '5.1': Bigger_Core, '5.2': Smaller_Core, '5.3': Equal_Core, '5.4': NEqual_Core,                                                           
             '6.1': Left_Uqdate_Core, '6.2': Right_Uqdate_Core, '6.3': Augmented_Uqdate_Core, '6.4': Assignment_Uqdate_Core,
             '7.1': Decalare_Line_Merge_Core, '7.2': Decalare_Line_Split_Core,
-            '8.1': Decalare_Position_First, '8.2': Decalare_Position_Temp
+            '8.1': Decalare_Position_First, '8.2': Decalare_Position_Temp,
+            '9.1': Decalare_Assign_Merge_Core, '9.2': Decalare_Assign_Split_Core
         }
 
         self.need_bracket = ['12.4']

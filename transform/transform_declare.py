@@ -1,7 +1,7 @@
 from transform.Core import Core
 from ist_utils import text, print_children, get_indent
 
-class Decalare_Position_Core(Core):
+class Decalare_Core(Core):
     def __init__(self, root, lang):
         super().__init__(root, lang)
         self.variable_declaration_mapping = {
@@ -58,6 +58,10 @@ class Decalare_Position_Core(Core):
                     if each not in first_use.keys():
                         first_use[each] = child.start_point[0]
         return first_declare, first_use
+
+class Decalare_Position_Core(Decalare_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
 
     def check_nfirst(self, node):
         # 定义变量没有集中在前几行
@@ -189,6 +193,205 @@ class Decalare_Position_First(Decalare_Position_Core):
     def count(self):
         check_func = self.check
         self.check = self.check_ntemp
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
+    
+class Decalare_Line_Core(Decalare_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+
+    def check_match_lines_merge(self, node):
+        # int a, b=0;
+        if node.type == self.variable_declaration_mapping[self.lang]:
+            ids = set()
+            self.contain_id(node, ids)
+            return len(ids) > 1
+        return False
+
+    def check_match_lines_split(self, node):
+        # int a; \n int b=0;
+        type_list = set()
+        for child in node.children:
+            if child.type == self.variable_declaration_mapping[self.lang]:
+                type = text(child.children[0])
+                if type in type_list:
+                    return True
+                type_list.add(type)
+        return False
+
+class Decalare_Line_Merge_Core(Decalare_Line_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+    
+    def check(self, u):
+        return self.check_match_lines_split(u)
+
+    def get_opts(self, node):
+        # int a; int b; -> int a, b;
+        opts = []
+        indent = get_indent(node.children[1].start_byte, self.code)
+        type_ids_dict, type_dec_node = self.get_declare_info(node)
+        for type, ids in type_ids_dict.items():
+            if len(ids) > 1:
+                start_byte = type_dec_node[type][0].start_byte
+                for node in type_dec_node[type]:
+                    opts.append((node.end_byte, node.start_byte))
+                str = f"{type} {', '.join(type_ids_dict[type])};"
+                opts.append((start_byte, str))
+        self.operations.extend(opts)
+    
+    def count(self):
+        check_func = self.check
+        self.check = self.check_match_lines_merge
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
+
+class Decalare_Line_Split_Core(Decalare_Line_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+
+    def check(self, u):
+        return self.check_match_lines_merge(u)
+
+    def get_opts(self, node):
+        # int a, b; -> int a; int b;
+        type = text(node.children[0])
+        opts = [(node.end_byte, node.start_byte)]
+        indent = get_indent(node.start_byte, self.code)
+        for i, child in enumerate(node.children[1: -1]):
+            if child.type == ',':
+                continue
+            opts.append((node.start_byte, f"\n{indent * ' '}{type} {text(child)};"))
+        self.operations.extend(opts)
+    
+    def count(self):
+        check_func = self.check
+        self.check = self.check_match_lines_split
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
+
+class Decalare_Assign_Core(Decalare_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+        self.declaration_mapping = {
+            'c': 'declaration',
+            'java': 'local_variable_declaration',
+            'c_sharp': 'local_declaration_statement'
+        }
+        self.init_declarator_mapping = {
+            'c': 'init_declarator',
+            'java': 'variable_declarator',
+            'c_sharp': 'variable_declaration'
+        }
+
+    def check_assign_merge(self, node):
+        if node.type == self.declaration_mapping[self.lang]:
+                for child in node.children:
+                    if child.type == self.init_declarator_mapping[self.lang]:
+                        return True
+        return False
+    
+    def check_assign_split(self, node):
+        if node.type == self.declaration_mapping[self.lang]:
+                for child in node.children:
+                    if child.type == self.init_declarator_mapping[self.lang] and len(child.children) == 3:
+                        return False
+                return True
+        return False
+    
+class Decalare_Assign_Split_Core(Decalare_Assign_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+    
+    def check(self, node):
+        return self.check_assign_merge(node)
+
+    def get_opts(self, node):
+        opts = []
+        if self.lang == 'c':
+            for child in node.children:
+                if child.type == self.init_declarator_mapping[self.lang]:
+                    declarator = child.child_by_field_name('declarator')
+                    value = child.child_by_field_name('value')
+                    indent = get_indent(node.start_byte, self.code)
+                    opts.append((value.end_byte, declarator.end_byte))
+                    opts.append((node.end_byte, f"\n{indent*' '}{text(declarator)} = {text(value)};"))
+        
+        elif self.lang == 'c_sharp':
+            for child in node.children:
+                if child.type == self.init_declarator_mapping[self.lang]:
+                    for u in child.children:
+                        if u.type == 'variable_declarator':
+                            declarator = u.children[0]
+                            if len(u.children) < 2: return
+                            if len(u.children[1].children) < 2: return
+                            value = u.children[1].children[1]
+                            indent = get_indent(node.start_byte, self.code)
+                            opts.append((value.end_byte, declarator.end_byte))
+                            opts.append((node.end_byte, f"\n{indent*' '}{text(declarator)} = {text(value)};"))
+        
+        elif self.lang == 'java':
+            for v in node.children:
+                if v.type == self.init_declarator_mapping[self.lang] and v.child_count >= 3:
+                    declarator = v.children[0]
+                    value = v.children[2]
+                    indent = get_indent(node.start_byte, self.code)
+                    opts.append((value.end_byte, declarator.end_byte))
+                    opts.append((node.end_byte, f"\n{indent*' '}{text(declarator)} = {text(value)};"))
+
+        self.operations.extend(opts)
+
+    def count(self):
+        check_func = self.check
+        self.check = self.check_assign_split
+        self.match_nodes = []
+        self.match(self.root)
+        self.check = check_func
+        return len(self.match_nodes)
+
+class Decalare_Assign_Merge_Core(Decalare_Assign_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+
+    def check(self, node):
+        return self.check_assign_split(node)
+
+    def get_opts(self, node):
+        # int i; i = 0; -> int i = 0;
+        type_node = node.children[0]
+        var_node = node.children[1]
+        assign_nodes = []
+
+        def find_val_node(u):
+            if len(assign_nodes) >= 1:
+                return
+            if u.type == 'assignment_expression' and text(u.children[0]) == text(var_node):
+                assign_nodes.append(u)
+                return
+            for v in u.children:
+                find_val_node(v)
+        find_val_node(node.parent)
+        
+        if len(assign_nodes) == 0:
+            return
+        assign_node = assign_nodes[0]
+        val_node = assign_node.children[2]
+
+        res =  [(node.end_byte, node.start_byte),
+                (assign_node.end_byte+1, assign_node.start_byte),
+                (node.start_byte, f"{text(type_node)} {text(var_node)} = {text(val_node)};")]
+
+        self.operations.extend(res)
+
+    def count(self):
+        check_func = self.check
+        self.check = self.check_assign_merge
         self.match_nodes = []
         self.match(self.root)
         self.check = check_func
