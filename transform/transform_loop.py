@@ -1,7 +1,7 @@
 from transform.Core import Core
 from ist_utils import text, print_children, get_indent
 
-class Loop_Type_Core(Core):
+class Loop_Core(Core):
     def __init__(self, root, lang):
         super().__init__(root, lang)
         self.declaration_mapping = {
@@ -14,7 +14,7 @@ class Loop_Type_Core(Core):
             'java': 'block', 
             'c_sharp': 'block'
         }
-    
+
     def get_for_info(self, node):
         # 提取for循环的abc信息，for(a;b;c)以及后面接的语句
         i, abc = 0, [None, None, None, None]
@@ -54,7 +54,11 @@ class Loop_Type_Core(Core):
         if node.type == 'do_statement' and 'while' in text(node):
             return True
         return False
-
+    
+class Loop_Type_Core(Loop_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+    
     def check(self, node):
         return self.check_for(node) or self.check_while(node) or self.check_dowhile(node)
 
@@ -233,3 +237,63 @@ class Loop_Type_DoWhile_Core(Loop_Type_Core):
         self.match(self.root)
         self.check = check_func
         return len(self.match_nodes)
+    
+
+class Loop_Inf_Core(Loop_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+
+class Loop_While_Inf(Loop_Inf_Core):
+    def __init__(self, root, lang):
+        super().__init__(root, lang)
+        self.opposite = {
+            '==': '!=', '!=': '==', 
+            '>': '<=',  '<=': '>',
+            '<': '>=',  '>=': '<',
+            '&&': '||', '||': '&&'}
+    
+    def check(self, node):
+        return self.check_while(node)
+
+    def get_opts(self, node):
+        res = []
+        compound_node = node.children[-1]
+        indent = get_indent(compound_node.children[1].start_byte, self.code)
+        mp = {}
+        def opp_dfs(u):
+            while len(u.children) >= 2 and text(u.children[0]) == '(':
+                u = u.children[1]
+            if len(u.children) == 0:
+                mp[text(u)] = '!' + text(u)
+                return
+            if '&&' not in text(u) and '||' not in text(u) and len(u.children) == 3:
+                if text(u.children[1]) in self.opposite:
+                    mp[text(u)] = text(u.children[0]) + self.opposite[text(u.children[1])] + text(u.children[2])
+                else:
+                    mp[text(u)] = '!' + text(u)
+                return
+            elif len(u.children) == 2 and text(u.children[0]) == '!':
+                mp[text(u)] = text(u.children[1])
+                return
+            elif len(u.children) == 3:
+                try:
+                    mp[text(u)] = text(u.children[0]) + self.opposite[text(u.children[1])] + text(u.children[2])
+                except:
+                    mp[text(u)] = '!' + text(u)
+            
+            for v in u.children:
+                opp_dfs(v)
+        conditional_node = node.children[1].children[1]
+        opp_dfs(conditional_node)
+        conditional_str = text(conditional_node)
+        for key, val in mp.items():
+            conditional_str = conditional_str.replace(key, val)
+        
+        break_str = f"\n{' '*indent}if({conditional_str}) break;"
+        res.append((compound_node.children[0].start_byte+1, break_str))
+
+        res.append((conditional_node.end_byte, conditional_node.start_byte))
+        res.append((conditional_node.start_byte, 'true'))
+        self.operations.extend(res)
+
+    

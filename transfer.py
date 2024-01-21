@@ -53,7 +53,8 @@ class IST:
             '8.1': Decalare_Position_First, '8.2': Decalare_Position_Temp,
             '9.1': Decalare_Assign_Merge_Core, '9.2': Decalare_Assign_Split_Core,
             '10.1': For_Format_OBC_Core, '10.2': For_Format_AOC_Core, '10.3': For_Format_ABO_Core, '10.4': For_Format_AOO_Core, '10.5': For_Format_OBO_Core, '10.6': For_Format_OOC_Core, '10.7': For_Format_OOO_Core,
-            '11.1': Loop_Type_For_Core, '11.2': Loop_Type_While_Core, '11.3': Loop_Type_DoWhile_Core
+            '11.1': Loop_Type_For_Core, '11.2': Loop_Type_While_Core, '11.3': Loop_Type_DoWhile_Core,
+            '12.1': Loop_While_Inf,
         }
 
         self.need_bracket = ['12.4']
