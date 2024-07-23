@@ -99,10 +99,11 @@ def rec_identifier(node):   # tx
         id_type.clear()
         get_id_type(node, id_type)
     if node.type not in ['identifier', 'field_identifier']: return False
+    if text(node) in ['cout', 'endl']: return False
     if text(node) in java_keywords: return False
-    if node.parent.type == 'field_expression' and \
-       text(node) == text(node.parent.child_by_field_name('argument')): return True  # x->a的x
+    if node.parent.type == 'field_expression' and text(node) == text(node.parent.child_by_field_name('argument')): return True  # x->a的x
     if node.parent.type in ["function_definition", "formal_parameter", "argument_list"]: return False
+    # if node.id in for_statement_identifiers_ids: return False
     if len(text(node)) == 0: return False
     return True
 

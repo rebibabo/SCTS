@@ -74,9 +74,9 @@ def cvt_Concat2Add(node):
     temp_node = node
     while temp_node.type == 'method_invocation' and text(temp_node.child_by_field_name('name')) == 'concat':
         id = text(temp_node.child_by_field_name('object'))
-        string_list.insert(0, id)
+        string_list.append(id)
         arguments = temp_node.child_by_field_name('arguments')
         temp_node = arguments.children[1]
-    string_list.insert(0, text(temp_node))
+    string_list.append(text(temp_node))
     return [(node.end_byte, node.start_byte),
             (node.start_byte, ' + '.join(string_list))]

@@ -140,7 +140,7 @@ def cvt_AOC(node, code):
             else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
                 first_expression_node = abc[3]
             indent = get_indent(first_expression_node.start_byte, code)
-            ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
+            ret.append((first_expression_node.start_byte, f"if (!({text(abc[1])}))\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
             if add_bracket:
                 ret.extend(add_bracket)
             return ret
@@ -186,7 +186,7 @@ def cvt_AOO(node, code):
             else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
                 first_expression_node = abc[3]
             indent = get_indent(first_expression_node.start_byte, code)
-            ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
+            ret.append((first_expression_node.start_byte, f"if (!({text(abc[1])}))\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
         if abc[2] is not None:  # 如果有c
             ret.append((abc[2].end_byte, abc[2].start_byte))
             if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
@@ -256,7 +256,7 @@ def cvt_OOC(node, code):
             else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
                 first_expression_node = abc[3]
             indent = get_indent(first_expression_node.start_byte, code)
-            ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
+            ret.append((first_expression_node.start_byte, f"if (!({text(abc[1])}))\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
         if add_bracket:
             ret.extend(add_bracket)
         return ret
@@ -286,7 +286,7 @@ def cvt_OOO(node, code):
         else:       # 如果是单行，后面加上了花括号，在就在expression的开始位置插入
             first_expression_node = abc[3]
         indent = get_indent(first_expression_node.start_byte, code)
-        ret.append((first_expression_node.start_byte, f"if ({text(abc[1])})\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
+        ret.append((first_expression_node.start_byte, f"if (!({text(abc[1])}))\n{(indent + 4) * ' '}break;\n{indent * ' '}"))
     if abc[2] is not None:  # 如果有c
         ret.append((abc[2].end_byte, abc[2].start_byte))
         if abc[3].type == 'compound_statement':     # 复合语句在第一句插入if b break
