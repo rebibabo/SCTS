@@ -45,49 +45,49 @@ class SCTS:
             raise NotImplementedError
         self.style_dict = {
             'python':{
-                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'),
-                1.1: ('print', 'add_flush'), 1.2: ('print', 'del_flush'), 1.3: ('print', 'add_end'), 1.4: ('print', 'del_end'),
-                2.1: ('list', 'init_call_list'), 2.2: ('list', 'init_list'), 2.3: ('list', 'call_list'), 2.4: ('list', 'list'), 
-                3.1: ('dict', 'init_call_dict'), 3.2: ('dict', 'init_dict'), 3.3: ('dict', 'call_dict'), 3.4: ('dict', 'dict'), 
-                4.1: ('range', 'add_zero'), 4.2: ('range', 'del_zero'), 4.3: ('range', 'add_slice_index'), 4.4: ('range', 'del_slice_index'), 4.5: ('range', 'add_index'),
-                5.1: ('call', 'add_magic_call'), 5.2: ('call', 'del_magic_call'),
-                6.1: ('string', 'single'), 6.2: ('string', 'double'), 6.3: ('string', 'add_f'),
-                7.1: ('op', 'augmented_assignment'), 7.2: ('op', 'assignment'), 7.3: ('op', 'test_left_const'), 7.4:('op', 'smaller'), 7.5:('op', 'bigger'), 7.6:('op', 'chain'),
-                8.1: ('for', 'add_enumerate'), 8.2: ('for', 'while'), 8.3: ('for', 'for'),
-                9.1: ('declare', 'split'), 9.2: ('declare', 'merge_simple'),
-                10.1: ('return', 'add_bracket'), 10.2: ('return', 'del_bracket'), 10.3: ('return', 'add_None'), 10.4: ('return', 'del_None'),
+                "0.1": ('var', 'camel'), "0.2": ('var', 'initcap'), "0.3": ('var', 'underscore'), "0.4": ('var', 'init_underscore'), "0.5": ('var', 'init_dollar'), "0.6": ('var', 'upper'), "0.7": ('var', 'lower'),
+                "1.1": ('print', 'add_flush'), "1.2": ('print', 'del_flush'), "1.3": ('print', 'add_end'), "1.4": ('print', 'del_end'),
+                "2.1": ('list', 'init_call_list'), "2.2": ('list', 'init_list'), "2.3": ('list', 'call_list'), "2.4": ('list', 'list'), 
+                "3.1": ('dict', 'init_call_dict'), "3.2": ('dict', 'init_dict'), "3.3": ('dict', 'call_dict'), "3.4": ('dict', 'dict'), 
+                "4.1": ('range', 'add_zero'), "4.2": ('range', 'del_zero'), "4.3": ('range', 'add_slice_index'), "4.4": ('range', 'del_slice_index'), "4.5": ('range', 'add_index'),
+                "5.1": ('call', 'add_magic_call'), "5.2": ('call', 'del_magic_call'),
+                "6.1": ('string', 'single'), "6.2": ('string', 'double'), "6.3": ('string', 'add_f'),
+                "7.1": ('op', 'augmented_assignment'), "7.2": ('op', 'assignment'), "7.3": ('op', 'test_left_const'), "7.4":('op', 'smaller'), "7.5":('op', 'bigger'), "7.6":('op', 'chain'),
+                "8.1": ('for', 'add_enumerate'), "8.2": ('for', 'while'), "8.3": ('for', 'for'),
+                "9.1": ('declare', 'split'), "9.2": ('declare', 'merge_simple'),
+                "10.1": ('return', 'add_bracket'), "10.2": ('return', 'del_bracket'), "10.3": ('return', 'add_None'), "10.4": ('return', 'del_None'),
             },
             'c':{
-                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'), 0.8: ('var', 'hungarian'),
-                1.1: ('blank', 'bracket_1'), 1.2: ('blank', 'bracket_2'), 1.3: ('blank', 'add_blank'), 1.4: ('blank', 'add_bracket'), 1.5: ('blank', 'del_bracket'),
-                2.1: ('op', 'assignment'), 2.2: ('op', 'augmented_assignment'), 2.3: ('op', 'test_left_const'), 2.4:('op', 'smaller'), 2.5:('op', 'bigger'), 2.6: ('op', 'equal'), 2.7: ('op', 'not_equal'),
-                3.1: ('update', 'left'), 3.2: ('update', 'right'), 3.3: ('update', 'augment'), 3.4: ('update', 'assignment'),
-                4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
-                5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
-                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'), 6.5: ('declare', 'assign_split'),
-                7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'), 7.11: ('loop', 'do_while'),
-                8.1: ('if', 'merge'), 8.2: ('if', 'switch'), 8.3: ('if', 'if')
+                "0.1": ('var', 'camel'), "0.2": ('var', 'initcap'), "0.3": ('var', 'underscore'), "0.4": ('var', 'init_underscore'), "0.5": ('var', 'init_dollar'), "0.6": ('var', 'upper'), "0.7": ('var', 'lower'), "0.8": ('var', 'hungarian'),
+                "1.1": ('blank', 'bracket_1'), "1.2": ('blank', 'bracket_2'), "1.3": ('blank', 'add_blank'), "1.4": ('blank', 'add_bracket'), "1.5": ('blank', 'del_bracket'),
+                "2.1": ('op', 'assignment'), "2.2": ('op', 'augmented_assignment'), "2.3": ('op', 'test_left_const'), "2.4":('op', 'smaller'), "2.5":('op', 'bigger'), "2.6": ('op', 'equal'), "2.7": ('op', 'not_equal'),
+                "3.1": ('update', 'left'), "3.2": ('update', 'right'), "3.3": ('update', 'augment'), "3.4": ('update', 'assignment'),
+                "4.1": ('main', 'int_void_return'), "4.2": ('main', 'int_void'), "4.3": ('main', 'int_return'), "4.4": ('main', 'int'), "4.5": ('main', 'int_arg_return'), "4.6": ('main', 'int_arg'), "4.7": ('main', 'void_arg'), "4.8": ('main', 'void'),
+                "5.1": ('array', 'dyn_mem'), "5.2": ('array', 'static_mem'), "5.3": ('array', 'pointer'), "5.4": ('array', 'array'),
+                "6.1": ('declare', 'split'), "6.2": ('declare', 'merge'), "6.3": ('declare', 'first'), "6.4": ('declare', 'temp'), "6.5": ('declare', 'assign_split'),
+                "7.1": ('loop', 'obc'), "7.2": ('loop', 'aoc'), "7.3": ('loop', 'abo'), "7.4": ('loop', 'aoo'), "7.5": ('loop', 'obo'), "7.6": ('loop', 'ooc'), "7.7": ('loop', 'ooo')," 7.8": ('loop', 'for'), "7.9": ('loop', 'while'), "7.10": ('loop', 'do_while'),
+                "8.1": ('if', 'merge'), "8.2": ('if', 'switch'), "8.3": ('if', 'if')
             },
             'cpp':{
-                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'), 0.8: ('var', 'hungarian'),
-                1.1: ('blank', 'bracket_1'), 1.2: ('blank', 'bracket_2'), 1.3: ('blank', 'add_blank'), 1.4: ('blank', 'add_bracket'), 1.5: ('blank', 'del_bracket'),
-                2.1: ('op', 'assignment'), 2.2: ('op', 'augmented_assignment'), 2.3: ('op', 'test_left_const'), 2.4:('op', 'smaller'), 2.5:('op', 'bigger'), 2.6: ('op', 'equal'), 2.7: ('op', 'not_equal'),
-                3.1: ('update', 'left'), 3.2: ('update', 'right'), 3.3: ('update', 'augment'), 3.4: ('update', 'assignment'),
-                4.1: ('main', 'int_void_return'), 4.2: ('main', 'int_void'), 4.3: ('main', 'int_return'), 4.4: ('main', 'int'), 4.5: ('main', 'int_arg_return'), 4.6: ('main', 'int_arg'), 4.7: ('main', 'void_arg'), 4.8: ('main', 'void'),
-                5.1: ('array', 'dyn_mem'), 5.2: ('array', 'static_mem'), 5.3: ('array', 'pointer'), 5.4: ('array', 'array'),
-                6.1: ('declare', 'split'), 6.2: ('declare', 'merge'), 6.3: ('declare', 'first'), 6.4: ('declare', 'temp'), 6.5: ('declare', 'assign_split'),
-                7.1: ('loop', 'obc'), 7.2: ('loop', 'aoc'), 7.3: ('loop', 'abo'), 7.4: ('loop', 'aoo'), 7.5: ('loop', 'obo'), 7.6: ('loop', 'ooc'), 7.7: ('loop', 'ooo'), 7.8: ('loop', 'for'), 7.9: ('loop', 'while'), 7.11: ('loop', 'do_while'),
-                8.1: ('if', 'merge'), 8.2: ('if', 'switch'), 8.3: ('if', 'if'),
-                9.1: ('cpp', 'stdc++'), 9.2: ('cpp', 'namespace'), 9.3: ('cpp', 'sync_with_false'), 9.4: ('cpp', 'struct'), 9.5: ('cpp', 'coutendl'), 9.6: ('cpp', 'cout'), 9.7: ('cpp', 'del_endl'), 9.8: ('cpp', 'printf'), 9.9: ('cpp', 'cin'), 9.11: ('cpp', 'scanf'),
+                "0.1": ('var', 'camel'), "0.2": ('var', 'initcap'), "0.3": ('var', 'underscore'), "0.4": ('var', 'init_underscore'), "0.5": ('var', 'init_dollar'), "0.6": ('var', 'upper'), "0.7": ('var', 'lower'), "0.8": ('var', 'hungarian'),
+                "1.1": ('blank', 'bracket_1'), "1.2": ('blank', 'bracket_2'), "1.3": ('blank', 'add_blank'), "1.4": ('blank', 'add_bracket'), "1.5": ('blank', 'del_bracket'),
+                "2.1": ('op', 'assignment'), "2.2": ('op', 'augmented_assignment'), "2.3": ('op', 'test_left_const'), "2.4":('op', 'smaller'), "2.5":('op', 'bigger'), "2.6": ('op', 'equal'), "2.7": ('op', 'not_equal'),
+                "3.1": ('update', 'left'), "3.2": ('update', 'right'), "3.3": ('update', 'augment'), "3.4": ('update', 'assignment'),
+                "4.1": ('main', 'int_void_return'), "4.2": ('main', 'int_void'), "4.3": ('main', 'int_return'), "4.4": ('main', 'int'), "4.5": ('main', 'int_arg_return'), "4.6": ('main', 'int_arg'), "4.7": ('main', 'void_arg'), "4.8": ('main', 'void'),
+                "5.1": ('array', 'dyn_mem'), "5.2": ('array', 'static_mem'), "5.3": ('array', 'pointer'), "5.4": ('array', 'array'),
+                "6.1": ('declare', 'split'), "6.2": ('declare', 'merge'), "6.3": ('declare', 'first'), "6.4": ('declare', 'temp'), "6.5": ('declare', 'assign_split'),
+                "7.1": ('loop', 'obc'), "7.2": ('loop', 'aoc'), "7.3": ('loop', 'abo'), "7.4": ('loop', 'aoo'), "7.5": ('loop', 'obo'), "7.6": ('loop', 'ooc'), "7.7": ('loop', 'ooo')," 7.8": ('loop', 'for'), "7.9": ('loop', 'while'), "7.10": ('loop', 'do_while'),
+                "8.1": ('if', 'merge'), "8.2": ('if', 'switch'), "8.3": ('if', 'if'),
+                "9.1": ('cpp', 'stdc++'), "9.2": ('cpp', 'namespace'), "9.3": ('cpp', 'sync_with_false'), "9.4": ('cpp', 'struct'), "9.5": ('cpp', 'coutendl'), "9.6": ('cpp', 'cout'), "9.7": ('cpp', 'del_endl'), "9.8": ('cpp', 'printf'), "9.9": ('cpp', 'cin')," 9.10": ('cpp', 'scanf'),
             },
             'java':{
-                0.1: ('var', 'camel'), 0.2: ('var', 'initcap'), 0.3: ('var', 'underscore'), 0.4: ('var', 'init_underscore'), 0.5: ('var', 'init_dollar'), 0.6: ('var', 'upper'), 0.7: ('var', 'lower'), 0.8: ('var', 'invichar'), 0.9: ('var', 'hungarian'),
-                1.1: ('op', 'assignment'), 1.2: ('op', 'augmented_assignment'), 1.3: ('op', 'test_left_const'), 1.4:('op', 'smaller'), 1.5:('op', 'bigger'),
-                2.1: ('update', 'left'), 2.2: ('update', 'right'), 2.3: ('update', 'augment'), 2.4: ('update', 'assignment'),
-                3.1: ('string', 'new_string'), 3.2: ('string', 'string'), 3.3: ('string', 'add'),
-                4.1: ('bool', 'not_equal'), 4.2: ('bool', 'equal'), 4.3: ('bool', 'single'),
-                5.1: ('loop', 'obc'), 5.2: ('loop', 'aoc'), 5.3: ('loop', 'abo'), 5.4: ('loop', 'aoo'), 5.5: ('loop', 'obo'), 5.6: ('loop', 'ooc'), 5.7: ('loop', 'ooo'), 5.8: ('loop', 'for'), 5.9: ('loop', 'while'), 5.11: ('loop', 'do_while'),
-                6.1: ('array', 'index_zero'), 6.2: ('array', 'index'), 6.3: ('array', 'size'), 6.4: ('array', 'is_empty'),
+                "0.1": ('var', 'camel'), "0.2": ('var', 'initcap'), "0.3": ('var', 'underscore'), "0.4": ('var', 'init_underscore'), "0.5": ('var', 'init_dollar'), "0.6": ('var', 'upper'), "0.7": ('var', 'lower'), "0.8": ('var', 'invichar'), "0.9": ('var', 'hungarian'),
+                "1.1": ('op', 'assignment'), "1.2": ('op', 'augmented_assignment'), "1.3": ('op', 'test_left_const'), "1.4":('op', 'smaller'), "1.5":('op', 'bigger'),
+                "2.1": ('update', 'left'), "2.2": ('update', 'right'), "2.3": ('update', 'augment'), "2.4": ('update', 'assignment'),
+                "3.1": ('string', 'new_string'), "3.2": ('string', 'string'), "3.3": ('string', 'add'),
+                "4.1": ('bool', 'not_equal'), "4.2": ('bool', 'equal'), "4.3": ('bool', 'single'),
+                "5.1": ('loop', 'obc'), "5.2": ('loop', 'aoc'), "5.3": ('loop', 'abo'), "5.4": ('loop', 'aoo'), "5.5": ('loop', 'obo'), "5.6": ('loop', 'ooc'), "5.7": ('loop', 'ooo'), "5.8": ('loop', 'for'), "5.9": ('loop', 'while'), "5.10": ('loop', 'do_while'),
+                "6.1": ('array', 'index_zero'), "6.2": ('array', 'index'), "6.3": ('array', 'size'), "6.4": ('array', 'is_empty'),
             }
         }
 
@@ -212,61 +212,21 @@ class SCTS:
 
 if __name__ == '__main__':
     language = 'java'
-    check_last = 0
-    stop_each = 0
-    check_single = 0
+    style = ["3.1","1.5"]  # "3.1"
+    dataset = open(f'dataset/{language}_formatted.jsonl').readlines()[:1000]
     scts = SCTS(language)
-    language_style = {'python': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4],\
-                      'cpp': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11],\
-                      'java': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.11, 6.1, 6.2, 6.3, 6.4], \
-                      'c': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.11, 8.1, 8.2, 8.3]}
-    last_style, last_line = language_style[language][0], 0
-    last_style = 3.3
-    if check_last:
-        try:
-            last_style, last_line = open('process.txt', 'r').read().split('\n')[-2:]
-            last_style = float(last_style)
-            last_line = int(last_line)
-        except:
-            print("no process.txt")
-    if not check_single:
-        dataset = open(f'dataset/{language}_formatted.jsonl').readlines()[:2000]
-        for style in language_style[language]:
-            if style != last_style:
-                continue
-            try_num, succ_num = 0, 0
-            bar = tqdm(dataset, total=len(dataset))
-            for i, line in enumerate(bar):
-                # if check_last and i < last_line - 1:
-                #     continue
-                try_num += 1
-                open('process.txt', 'w').write(f'{style}\n{i}')
-                code = json.loads(line)['code']
-                if not scts.check_syntax(code):
-                    continue
-                new_code, succ = scts.change_file_style([style], code)
-                succ_rate = succ_num / try_num
-                bar.set_description(f"style {style} succ rate {succ_rate * 100:.2f}%")
-                if succ:
-                    succ_num += 1
-                    if stop_each or not scts.check_syntax(new_code):
-                        print(code)
-                        print("=====================================")
-                        input(new_code)
-                        try:
-                            scts.see_tree(new_code)
-                        except:
-                            pass
-            last_line = 0
-    else:
-        code = open('test', encoding='utf-8').read()
-        print(code)
-        print("=====================================")
-        new_code, succ = scts.change_file_style(last_style, code)
-        print(new_code)
-        # style_num = scts.get_file_popularity([3.3], code)
-        # print(style_num)
-
+    try_num, succ_num = 0, 0
+    bar = tqdm(dataset, total=len(dataset))
+    for i, line in enumerate(bar):
+        try_num += 1
+        code = json.loads(line)['code']
+        if not scts.check_syntax(code):
+            continue
+        new_code, succ = scts.change_file_style(style, code)
+        if succ:
+            succ_num += 1
+        succ_rate = succ_num / try_num
+        bar.set_description(f"style {style} succ rate {succ_rate * 100:.2f}%")
 
 # 'python': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4],\
 # 'cpp': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9],\

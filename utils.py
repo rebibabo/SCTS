@@ -9,7 +9,6 @@ def get_parameter_count(func):
     return len(params)
 
 def replace_from_blob(operation, blob):
-    print(operation, blob)
     diff = 0        # 插入删除产生的长度差
     # 按照第一个元素，及修改的位置从小到大排序，如果有同一个位置删除和插入，先删除再插入
     operation = sorted(operation, key=lambda x: (x[0], 1 if type(x[1]) is int else 0, -len(x[1]) if type(x[1]) is not int else 0)) # 第一个key是index，第二个key是先做删除操作，第三个key是先插入字符串少的
