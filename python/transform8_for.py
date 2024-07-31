@@ -1,4 +1,6 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 import re
 
 index = ['i', 'j', 'k', 'l', 'm', 'n', '_', 'x', 'y', 'z', 't', 'u', 'v', 'w']
@@ -6,7 +8,7 @@ last_code = ''
 last_identifiers = set()
 identifiers = set()
 
-def get_indent(start_byte, code):
+def get_indent(start_byte: int, code: str) -> int:
     indent = 0
     i = start_byte
     while i >= 0 and code[i] != '\n':
@@ -17,7 +19,7 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
         
-def clear_identifier(code):
+def clear_identifier(code: str) -> None:
     global last_code, last_identifiers, identifiers
     if code != last_code:
         last_code = code
@@ -25,27 +27,27 @@ def clear_identifier(code):
         identifiers = set()
 
 '''==========================匹配========================'''
-def rec_ForIter(node):
+def rec_ForIter(node: Node) -> bool:
     # for i in x:
     if node.type == 'for_statement' and node.children[3].type != 'call' \
         and len(node.children[3].children) > 0 and node.children[3].children[0].text != b'range':
         return True
 
-def rec_ForRange(node):
+def rec_ForRange(node: Node) -> bool:
     # for i in range(a, b):
     if node.type == 'identifier':
         identifiers.add(text(node))
     if node.type == 'for_statement':
         return True
 
-def rec_ListComprehension(node):
+def rec_ListComprehension(node: Node) -> bool:
     # x = [f(i) for i in x if condition]
     if node.type == 'assignment':
         if len(node.children) > 2 and node.children[2].type == 'list_comprehension' \
             and node.children[0].type == 'identifier':
             return True
 
-def match_ForEnumerate(node):
+def match_ForEnumerate(node: Node) -> bool:
     if node.type == 'for_statement':
         right = node.child_by_field_name('right')
         if right.type == 'call':
@@ -53,12 +55,12 @@ def match_ForEnumerate(node):
             if function == 'enumerate':
                 return True
 
-def match_While(node):
+def match_While(node: Node) -> bool:
     if node.type == 'while_statement':
         return True
 
 '''==========================替换========================'''
-def cvt_AddEnumerate(node):
+def cvt_AddEnumerate(node: Node) -> List[Tuple[int, Union[int, str]]]:
     ret = [(node.children[0].end_byte + 1, 'idx, '), 
             (node.children[3].start_byte, 'enumerate('),
             (node.children[3].end_byte, ')')]
@@ -73,7 +75,7 @@ def cvt_AddEnumerate(node):
         # for (i, j) in x -> for idx, (i, j) in enumerate(x)
         return ret
 
-def cvt_ForRange2While(node, code):
+def cvt_ForRange2While(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # for a in x -> i = 0\nwhile i < len(x):\n    a = x[i]\n    i += 1
     clear_identifier(code)
     indent = get_indent(node.start_byte, code)
@@ -95,7 +97,7 @@ def cvt_ForRange2While(node, code):
     last_identifiers.add(new_iter)
     return ret
 
-def cvt_ListComprehension2For(node, code):
+def cvt_ListComprehension2For(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # x = [str(i).replace(' ','') for i in x if i < 2 else '']
     #                   ->
     # temp_x = []

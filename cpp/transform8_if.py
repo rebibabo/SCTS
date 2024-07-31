@@ -1,6 +1,8 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
-def get_indent(start_byte, code):
+def get_indent(start_byte: int, code: str) -> int:
     indent = 0
     i = start_byte
     while i >= 0 and code[i] != '\n':
@@ -11,7 +13,7 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
 
-def dfs(u):
+def dfs(u: Node) -> str:
     if len(u.children) != 3 or text(u.children[1]) != '&&':
         while len(u.children) >= 2 and text(u.children[0]) == '(':
             u = u.children[1]
@@ -20,7 +22,7 @@ def dfs(u):
     return ';'.join(l)
 
 '''==========================匹配========================'''
-def rec_IfMerge(node):  # tx
+def rec_IfMerge(node: Node) -> bool:  # tx
     # if ( a && b )
     if node.type != 'if_statement': return False
     expr_node = node.child_by_field_name('condition')
@@ -31,14 +33,14 @@ def rec_IfMerge(node):  # tx
     if text(expr_in_node.children[1]) != '&&': return False
     return True
 
-def rec_IfSplit(node):
+def rec_IfSplit(node: Node) -> bool:
     # if(a) if(b)
     if node.type != 'if_statement': return False
     consequence = node.child_by_field_name('consequence')
     if consequence.type != 'if_statement': return False
     return True
 
-def rec_If(node):   # tx change
+def rec_If(node: Node) -> bool:   # tx change
     # if(a==0) else if(a==1) else if(a==2)...
     if node.type != 'if_statement': return False
     if node.parent.type == 'if_statement': return False
@@ -65,12 +67,12 @@ def rec_If(node):   # tx change
             break
     return True
 
-def rec_Switch(node):    # tx
+def rec_Switch(node: Node) -> bool:    # tx
     if node.type == 'switch_statement':
         return True
 
 '''==========================替换========================'''
-def cvt_IfSplit(node):  # tx
+def cvt_IfSplit(node: Node) -> List[Tuple[int, Union[int, str]]]:  # tx
     expr_node = node.child_by_field_name('condition')
     expr_in_node = expr_node.children[1]
     while len(expr_in_node.children) >= 1 and text(expr_in_node.children[0]) == '(':
@@ -83,7 +85,7 @@ def cvt_IfSplit(node):  # tx
     return [(expr_node.end_byte, node.start_byte),
             (node.start_byte, new_str),]
 
-def cvt_if2switch(node, code):  # tx change
+def cvt_if2switch(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:  # tx change
     # if(a==b) else if (a==c) -> switch(a){case b: break; case c: break; default:}
     ori_node = node
     condition = node.child_by_field_name('condition')
@@ -128,7 +130,7 @@ def cvt_if2switch(node, code):  # tx change
             (ori_node.start_byte, new_str)]
                 
 
-def cvt_switch2if(node, code):  # tx
+def cvt_switch2if(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:  # tx
     var_str = text(node.children[1].children[1])
     compound_node = node.children[2]
     case_nodes = []

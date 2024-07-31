@@ -1,7 +1,9 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
 '''==========================匹配========================'''
-def rec_CallPrintWithFlush(node):
+def rec_CallPrintWithFlush(node: Node) -> bool:
     # 是否是print(args, flush=True)
     if node.type == 'call':
         func = node.child_by_field_name('function')
@@ -14,7 +16,7 @@ def rec_CallPrintWithFlush(node):
                     if value.text == b'True':     
                         return True
 
-def rec_CallPrintWithoutFlush(node):
+def rec_CallPrintWithoutFlush(node: Node) -> bool:
     # 是否是print()且不是print(args, flush=True)
     if node.type == 'call':
         func = node.child_by_field_name('function')
@@ -28,7 +30,7 @@ def rec_CallPrintWithoutFlush(node):
                         return
             return True
 
-def rec_CallPrintWithEndn(node):
+def rec_CallPrintWithEndn(node: Node) -> bool:
     # 是否是print(args, end='\n')
     if node.type == 'call':
         func = node.child_by_field_name('function')
@@ -41,7 +43,7 @@ def rec_CallPrintWithEndn(node):
                     if value.text == b'"\\n"' or value.text == b"'\\n'":
                         return True
 
-def rec_CallPrintWithoutEnd(node):
+def rec_CallPrintWithoutEnd(node: Node) -> bool:
     # 是否是print()且不是print(args, end='\n')
     if node.type == 'call':
         func = node.child_by_field_name('function')
@@ -54,7 +56,7 @@ def rec_CallPrintWithoutEnd(node):
             return True
 
 '''==========================替换========================'''
-def cvt_CallPrint2CallPrintWithFlush(node):
+def cvt_CallPrint2CallPrintWithFlush(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # print(args) -> print(args, flush=True)
     args = node.child_by_field_name('arguments')
     if len(args.children) == 2:
@@ -62,7 +64,7 @@ def cvt_CallPrint2CallPrintWithFlush(node):
     else:
         return [(args.children[-1].start_byte, ', flush=True')]
 
-def cvt_CallPrintWithFlush2CallPrint(node):
+def cvt_CallPrintWithFlush2CallPrint(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # print(args, flush=True) -> print(args)
     args = node.child_by_field_name('arguments')    # text为(flush=True)
     if len(args.children) == 3:
@@ -76,7 +78,7 @@ def cvt_CallPrintWithFlush2CallPrint(node):
             if keyword and keyword.text == b'flush':
                 return [(a.end_byte, last_comma_index - 1)]
 
-def cvt_CallPrint2CallPrintWithEnd(node):
+def cvt_CallPrint2CallPrintWithEnd(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # print(args) -> print(args, end='\n')
     args = node.child_by_field_name('arguments')
     if len(args.children) == 2:
@@ -84,7 +86,7 @@ def cvt_CallPrint2CallPrintWithEnd(node):
     else:
         return [(args.end_byte - 1, ", end='\\n'")]
 
-def cvt_CallPrintWithEndn2CallPrint(node):
+def cvt_CallPrintWithEndn2CallPrint(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # print(args, end='\n') -> print(args)
     args = node.child_by_field_name('arguments')    # text为(flush=True)
     if len(args.children) == 3:

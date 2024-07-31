@@ -1,7 +1,9 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
 neglect_list = [',', ';', 'subscript_expression', 'call_expression', 'primitive_type', 'sized_type_specifier', 'struct_specifier', 'storage_class_specifier']
-def get_declare_info(node):
+def get_declare_info(node: Node) -> Tuple[Dict[str, List[str]], Dict[str, List[Node]]]:
     # 返回node代码块中所有类型的变量名以及节点字典
     type_ids_dict, type_dec_node = {}, {}
     for child in node.children:
@@ -20,7 +22,7 @@ def get_declare_info(node):
                 type_ids_dict[type].append(text(each))
     return type_ids_dict, type_dec_node
 
-def contain_id(node, contain):
+def contain_id(node: Node, contain: Set) -> None:
     # 返回node节点子树中的所有变量名
     if node.child_by_field_name('index'):   # a[i] < 2中的index：i
         contain.add(text(node.child_by_field_name('index')))
@@ -31,7 +33,7 @@ def contain_id(node, contain):
     for n in node.children:
         contain_id(n, contain)
 
-def get_id_first_line(node):
+def get_id_first_line(node: Node) -> Tuple[Dict[str, int], Dict[str, int]]:
     # 获取所有变量在该node代码块第一次声明和使用的行号
     first_declare, first_use = {}, {}
     for child in node.children:
@@ -50,7 +52,7 @@ def get_id_first_line(node):
                     first_use[each] = child.start_point[0]
     return first_declare, first_use
 
-def get_indent(start_byte, code):
+def get_indent(start_byte: int, code: str) -> int:
     indent = 0
     i = start_byte
     while i >= 0 and code[i] != '\n':
@@ -61,7 +63,7 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
 
-def get_type(node):
+def get_type(node: Node) -> str:
     type = ''
     for child in node.children:
         if child.type == 'storage_class_specifier':
@@ -72,7 +74,7 @@ def get_type(node):
     return type
 
 '''==========================匹配========================'''
-def rec_DeclareMerge(node):
+def rec_DeclareMerge(node: Node) -> bool:
     # int a, b=0;
     if node.type == 'declaration' and node.children[0].type not in ['storage_class_specifier', 'type_qualifier']:   # not static const
         if node.parent.type != 'for_statement':
@@ -80,7 +82,7 @@ def rec_DeclareMerge(node):
             contain_id(node, ids)
             return len(ids) > 1
 
-def rec_DeclareSplit(node):
+def rec_DeclareSplit(node: Node) -> bool:
     # int a; \n int b=0;
     type_list = []
     for child in node.children:
@@ -90,7 +92,7 @@ def rec_DeclareSplit(node):
                 return True
             type_list.append(type)
 
-def rec_DeclareNotFirst(node):
+def rec_DeclareNotFirst(node: Node) -> bool:
     # 定义变量没有集中在前几行
     is_first_dec = True
     if node.type == 'compound_statement':
@@ -101,7 +103,7 @@ def rec_DeclareNotFirst(node):
             if child.type == 'declaration' and is_first_dec == False:
                 return True
 
-def rec_DeclareNotTemp(node):
+def rec_DeclareNotTemp(node: Node) -> bool:
     # 定义变量没有在第一次使用的上一行
     if node.type == 'compound_statement':
         first_declare, first_use = get_id_first_line(node)
@@ -109,13 +111,13 @@ def rec_DeclareNotTemp(node):
             if id in first_use and first_use[id] != dec + 1:
                 return True
 
-def rec_DeclareAssign(node):
+def rec_DeclareAssign(node: Node) -> bool:
     if node.type == 'declaration':
         for child in node.children:
             if child.type == 'init_declarator':
                 return True
 
-def match_AssignSplit(node):
+def match_AssignSplit(node: Node) -> bool:
     # int a;\n a = 0;
     if node.type == 'compound_statement':
         first_declare, first_use = get_id_first_line(node)
@@ -129,7 +131,7 @@ def match_AssignSplit(node):
                             return True
 
 '''==========================替换========================'''
-def cvt_DeclareMerge2Split(node, code):
+def cvt_DeclareMerge2Split(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # int a, b; -> int a; int b;
     type = get_type(node)
     ret = [(node.end_byte, node.start_byte)]
@@ -140,7 +142,7 @@ def cvt_DeclareMerge2Split(node, code):
         ret.append((node.start_byte, f"\n{indent * ' '}{type} {text(child)};"))
     return ret
 
-def cvt_DeclareSplit2Merge(node, code):
+def cvt_DeclareSplit2Merge(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # int a; int b; -> int a, b;
     ret = []
     type_ids_dict, type_dec_node = get_declare_info(node)
@@ -154,7 +156,7 @@ def cvt_DeclareSplit2Merge(node, code):
             ret.append((start_byte, str))
     return ret
             
-def cvt_DeclareFirst(node, code):
+def cvt_DeclareFirst(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # 把变量名声明的位置都放在最前面
     ret = []
     type_ids_dict, type_dec_node = get_declare_info(node)
@@ -173,7 +175,7 @@ def cvt_DeclareFirst(node, code):
     ret.append((start_byte, '\n'.join(declare_list)))
     return ret
 
-def cvt_DeclareTemp(node, code):
+def cvt_DeclareTemp(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # 将变量名声明的位置放在第一次使用该变量名的前一行
     first_declare, first_use = get_id_first_line(node)
     declare_node, temp_id = [], []
@@ -237,7 +239,7 @@ def cvt_DeclareTemp(node, code):
                     ret.append((child.start_byte, dec_str))
     return ret
 
-def cvt_DeclareAssignSplit(node, code):
+def cvt_DeclareAssignSplit(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # int i = 0; -> int i; \n i = 0;
     ret = []
     for child in node.children:

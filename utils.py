@@ -1,6 +1,8 @@
 import re
 from tree_sitter import Parser, Language
 import inspect
+from typing import TypeVar
+
 text = lambda x: x.text.decode('utf-8')
 
 def get_parameter_count(func):

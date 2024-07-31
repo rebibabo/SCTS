@@ -1,8 +1,10 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 from python.transform1_print import *
 
 '''==========================匹配========================'''
-def rec_MagicCall(node):
+def rec_MagicCall(node: Node) -> bool:
     # 判断节点node是否使用了__call__: func.__call__()
     if node.type == 'call':
         func = node.child_by_field_name('function')
@@ -10,18 +12,18 @@ def rec_MagicCall(node):
         if attribute and attribute.text == b'__call__':
             return True
 
-def rec_Call(node,):
+def rec_Call(node: Node,) -> bool:
     # 判断是否调用了函数，且不是print函数
     if node.type == 'call' and not rec_MagicCall(node) and not rec_CallPrintWithoutEnd(node) and not rec_CallPrintWithoutFlush(node):
         return True
 
 '''==========================替换========================'''
-def cvt_Call2MagicCall(node):
+def cvt_Call2MagicCall(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # test(args) -> test.__call__(args)
     func = node.child_by_field_name('function')
     return [(func.end_byte, '.__call__')]   # 添加.__call__
 
-def cvt_MagicCall2Call(node):
+def cvt_MagicCall2Call(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # test.__call__(args) -> test(args)
     func = node.child_by_field_name('function') 
     dot_index = func.children[1].start_byte                # dot_index为".__call__"中'.'的索引

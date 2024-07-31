@@ -1,16 +1,18 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union, Dict
 from .transform5_array import get_array_dim
 from .transform6_declare import contain_id
 import re
 
-def find_format_specifiers(format_string):
+def find_format_specifiers(format_string: str) -> Tuple[List[str], List[Tuple[int, int]]]:
     # 使用正则表达式查找格式化字符串中的所有%的列表以及对应的位置切片
     format_specifiers = re.findall(r'%[-+]?\d*\.*\d*[cCdiouxXeEfgGsSpn]', format_string)
     format_specifiers_indices = list(re.finditer(r'%[-+]?\d*\.*\d*[cCdiouxXeEfgGsSpn]', format_string))
     indices = [(match.start(), match.end()) for match in format_specifiers_indices]
     return format_specifiers, indices
 
-def get_ids_type(node):
+def get_ids_type(node: Node) -> Dict[str, str]:
     # 返回node代码块中所有变量名的类型
     id_type_dict = {}
     for child in node.children:
@@ -32,7 +34,7 @@ def get_ids_type(node):
                     id_type_dict[text(id_node)] = type
     return id_type_dict
 
-def type2format(type):
+def type2format(type: str) -> str:
     if type in ['int', 'short', 'short int', 'int short', 'unsigned', 'unsigned int', 'unsigned short int']:
         return '%' + ('u' if 'unsigned' in type else '') + 'd'
     if type in ['char', 'unsigned char']:
@@ -46,7 +48,7 @@ def type2format(type):
     if type in ['long long', 'unsinged long long']:
         return '%' + ('u' if 'unsigned' in type else '') + 'lld'
 
-def get_stream_info(node, stream_type):
+def get_stream_info(node: Node, stream_type: str) -> Union[Tuple[str, str], None]:
     stream, stream_node = [], []
     n = node.children[0]
     while n:
@@ -130,7 +132,7 @@ def get_stream_info(node, stream_type):
     return format_str, params_str
 
 '''==========================匹配========================'''
-def rec_Include(node):
+def rec_Include(node: Node) -> bool:
     # 没有include<bits/stdc++.h>
     if node.type == 'translation_unit':
         for child in node.children:
@@ -139,7 +141,7 @@ def rec_Include(node):
                     return
         return True
 
-def match_Include(node):
+def match_Include(node: Node) -> bool:
     # 有include<bits/stdc++.h>
     if node.type == 'translation_unit':
         for child in node.children:
@@ -147,7 +149,7 @@ def match_Include(node):
                 if text(child.children[1]).replace(' ', '') == '<bits/stdc++.h>':
                     return True
 
-def rec_NameSpaceStd(node):
+def rec_NameSpaceStd(node: Node) -> bool:
     # 没有using namespace std;
     if node.type == 'translation_unit':
         for child in node.children:
@@ -156,7 +158,7 @@ def rec_NameSpaceStd(node):
                     return
         return True
 
-def match_NameSpaceStd(node):
+def match_NameSpaceStd(node: Node) -> bool:
     # 有using namespace std;
     if node.type == 'translation_unit':
         for child in node.children:
@@ -164,7 +166,7 @@ def match_NameSpaceStd(node):
                 if text(child).replace(' ', '') == 'usingnamespacestd;':
                     return True
 
-def rec_MainWithoutSync(node):
+def rec_MainWithoutSync(node: Node) -> bool:
     # 没有ios::sync_with_stdio(false);
     if node.type == 'function_definition':
         func_name = text(node.child_by_field_name('declarator').children[0])
@@ -177,7 +179,7 @@ def rec_MainWithoutSync(node):
                             return
             return True
 
-def match_MainWithSync(node):
+def match_MainWithSync(node: Node) -> bool:
     # 有ios::sync_with_stdio(false);
     if node.type == 'function_definition':
         func_name = text(node.child_by_field_name('declarator').children[0])
@@ -189,26 +191,26 @@ def match_MainWithSync(node):
                         if text(child.children[0].children[0]) == 'ios::sync_with_stdio':
                             return True
 
-def rec_StructDeclare(node):
+def rec_StructDeclare(node: Node) -> bool:
     # struct node a;
     if node.type == 'declaration':
         if node.children[0].type == 'struct_specifier' and not node.children[0].child_by_field_name('body'):
             return True
 
-def match_StructDeclare(node):
+def match_StructDeclare(node: Node) -> bool:
     # node a;
     if node.type == 'declaration':
         if node.children[0].type == 'type_identifier':
             return True
 
-def rec_Printf(node):
+def rec_Printf(node: Node) -> bool:
     if node.type == 'call_expression':
         if node.child_by_field_name('function'):
             func_name = text(node.child_by_field_name('function'))
             if func_name == 'printf':
                 return True
 
-def rec_Cout(node):
+def rec_Cout(node: Node) -> bool:
     # 判断是否是cout
     if node.type == 'expression_statement':
         node = node.children[0]
@@ -220,26 +222,26 @@ def rec_Cout(node):
             else:
                 return
 
-def match_CoutEndl(node):
+def match_CoutEndl(node: Node) -> bool:
     # 判断是否是cout << endl
     if rec_Cout(node):
         if 'endl' in text(node):
             return True
 
-def match_CoutNoEndl(node):
+def match_CoutNoEndl(node: Node) -> bool:
     # 判断是否是cout << str
     if rec_Cout(node):
         if 'endl' not in text(node):
             return True
 
-def rec_Scanf(node):
+def rec_Scanf(node: Node) -> bool:
     if node.type == 'call_expression':
         if node.child_by_field_name('function'):
             func_name = text(node.child_by_field_name('function'))
             if func_name == 'scanf':
                 return True
 
-def rec_Cin(node):
+def rec_Cin(node: Node) -> bool:
     # 判断是否是cin
     if node.type == 'expression_statement':
         node = node.children[0]
@@ -252,10 +254,10 @@ def rec_Cin(node):
                 return
 
 '''==========================替换========================'''
-def cvt_AddBitsStd(node):
+def cvt_AddBitsStd(node: Node) -> List[Tuple[int, Union[int, str]]]:
     return [(0, '#include<bits/stdc++.h>\n')]
 
-def cvt_AddStd(node):
+def cvt_AddStd(node: Node) -> List[Tuple[int, Union[int, str]]]:
     insert_index = 0
     for child in node.children:
         if child.type == 'function_definition':
@@ -265,16 +267,16 @@ def cvt_AddStd(node):
                 insert_index = child.start_byte
     return [(insert_index, f"using namespace std;\n")]
 
-def cvt_AddSyncWithFalse(node):
+def cvt_AddSyncWithFalse(node: Node) -> List[Tuple[int, Union[int, str]]]:
     body = node.child_by_field_name('body')
     return [(body.children[1].start_byte, "ios::sync_with_stdio(false);\n    ")]
 
-def cvt_DelStruct(node):
+def cvt_DelStruct(node: Node) -> List[Tuple[int, Union[int, str]]]:
     struct_node = node.children[0].children[0]
     id_node = node.children[0].children[1]
     return [(id_node.start_byte, struct_node.start_byte)]
 
-def cvt_Printf2CoutEndl(node):
+def cvt_Printf2CoutEndl(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # printf("format_str", params); -> cout << str << param_1 << str << param2 << endl;
     params = text(node.children[1])[1: -1]
     format_str = params.split(',')[0][1: -1]    # "format_str"
@@ -311,7 +313,7 @@ def cvt_Printf2CoutEndl(node):
     return [(node.end_byte, node.start_byte),
             (node.start_byte, ' << '.join(cout_stream))]
 
-def cvt_Printf2Cout(node):
+def cvt_Printf2Cout(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # printf("format_str", params); -> cout << str << param_1 << str << param2 << '\n';
     params = text(node.children[1])[1: -1]
     format_str = params.split(',')[0][1: -1]    # "format_str"
@@ -340,7 +342,7 @@ def cvt_Printf2Cout(node):
     return [(node.end_byte, node.start_byte),
             (node.start_byte, ' << '.join(cout_stream))]
 
-def cvt_DelEndl(node):
+def cvt_DelEndl(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # cout << "str" << endl -> cout << "str\n" or cout << endl -> cout << '\n';
     cout_stream = []
     n = node.children[0]
@@ -359,7 +361,7 @@ def cvt_DelEndl(node):
             return [(cout_stream[-1].end_byte, cout_stream[-1].start_byte),
                     (cout_stream[-1].start_byte, "'\\n'")]
 
-def cvt_Cout2Printf(node):
+def cvt_Cout2Printf(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # 将cout转为printf
     info = get_stream_info(node, 'cout')
     if info:
@@ -368,7 +370,7 @@ def cvt_Cout2Printf(node):
         return [(node.end_byte, node.start_byte),
                 (node.start_byte, printf_str)]
 
-def cvt_Scanf2Cin(node):
+def cvt_Scanf2Cin(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # scanf("%s", str) -> cin >> str;
     params = text(node.children[1])[1: -1]
     if '"' in params:
@@ -385,7 +387,7 @@ def cvt_Scanf2Cin(node):
     return [(node.end_byte, node.start_byte),
             (node.start_byte, ' >> '.join(cin_stream))]
 
-def cvt_Cin2Scanf(node):
+def cvt_Cin2Scanf(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # cin >> str; -> scanf("%s", str)
     info = get_stream_info(node, 'cin')
     if info:

@@ -1,6 +1,8 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
-def get_indent(start_byte, code):
+def get_indent(start_byte: int, code: str) -> int:
     indent = 0
     i = start_byte
     while i >= 0 and code[i] != '\n':
@@ -11,7 +13,7 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
     
-def get_array_dim(node):
+def get_array_dim(node: Node) -> int:
     # a[i], a[i][j]
     dim = 0
     temp_node = node
@@ -22,7 +24,7 @@ def get_array_dim(node):
         dim += 1
     return dim
 
-def get_pointer_dim(node):
+def get_pointer_dim(node: Node) -> int:
     # *(a + 0), *(*(a + m) + n), *(*(*(a + m) + n) + l)
     pointer = []
     def traverse(node, pointer):
@@ -33,7 +35,7 @@ def get_pointer_dim(node):
     traverse(node, pointer)
     return len(pointer)
 
-def get_size(param_node):
+def get_size(param_node: Node) -> str:
     if param_node.type == 'sizeof_expression':   # sizeof(type) * n 或 sizeof(type) * (n + m)
         expression = param_node.child_by_field_name('value') # (type) * n
         value = expression.child_by_field_name('value') # * n
@@ -47,7 +49,7 @@ def get_size(param_node):
         size = param_node
     return text(size)
 
-def is_nest_array(node):
+def is_nest_array(node: Node) -> bool:
     # a[b[i]]
     stack = []
     for c in text(node):
@@ -59,7 +61,7 @@ def is_nest_array(node):
             stack.pop()
     return False
 
-def get_left_id(node):
+def get_left_id(node: Node) -> Union[Node, None]:
     while node:
         if node.type == 'binary_expression':
             node = node.child_by_field_name('left')
@@ -69,7 +71,7 @@ def get_left_id(node):
             return
 
 '''==========================匹配========================'''
-def rec_StaticMem(node):
+def rec_StaticMem(node: Node) -> bool:
     # type a[n],最多两维就够了
     if node.type == 'declaration':
         for child in node.children:
@@ -78,7 +80,7 @@ def rec_StaticMem(node):
                 if dim < 3:
                     return True
 
-def rec_DynMemOneLine(node):
+def rec_DynMemOneLine(node: Node) -> bool:
     # type *a = (type *)malloc(sizeof(type) * n)
     if node.type == 'declaration':
         if node.children[1].type == 'init_declarator':
@@ -90,7 +92,7 @@ def rec_DynMemOneLine(node):
                         if child.type in ['number_literal', 'cast_expression', 'identifier']:
                             return True
                     
-def rec_DynMemTwoLine(node):
+def rec_DynMemTwoLine(node: Node) -> bool:
     #int *p;   p = (type *)malloc(sizeof(type) * n)
     #declaration   expression_statement
     is_find = False
@@ -114,10 +116,10 @@ def rec_DynMemTwoLine(node):
                     if child.children[1].children[1].text == id:
                         return True
 
-def rec_DynMem(node):
+def rec_DynMem(node: Node) -> bool:
     return rec_DynMemOneLine(node) or rec_DynMemTwoLine(node)
 
-def rec_Array(node):
+def rec_Array(node: Node) -> bool:
     # a[n] or a[m][n] or a[m][n][l]
     if node.type == 'subscript_expression' \
             and node.parent.type not in ['subscript_expression', 'pointer_expression', 'comma_expression'] \
@@ -126,7 +128,7 @@ def rec_Array(node):
             dim = get_array_dim(node)
             return dim < 4
 
-def rec_Pointer(node):
+def rec_Pointer(node: Node) -> bool:
     # *(*a + 0) or *(*(a + m) + n);
     if node.type == 'pointer_expression' and '&' not in text(node):
         dim = get_pointer_dim(node)
@@ -137,7 +139,7 @@ def rec_Pointer(node):
         return dim < 4
 
 '''==========================替换========================'''
-def cvt_Static2Dyn(node, code):
+def cvt_Static2Dyn(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # type a[n] -> type *a = (type *)malloc(sizeof(type) * n)
     type = text(node.child_by_field_name('type'))
     indent = get_indent(node.start_byte, code)
@@ -194,7 +196,7 @@ def cvt_Static2Dyn(node, code):
             return [(node.end_byte, node.start_byte),
                     (node.start_byte, str)]
         
-def cvt_Dyn2Static(node):
+def cvt_Dyn2Static(node: Node) -> List[Tuple[int, Union[int, str]]]:
     if rec_DynMemOneLine(node):
         # type *a = (type *)malloc(sizeof(type) * n) -> type a[n]
         type = text(node.children[0])
@@ -225,7 +227,7 @@ def cvt_Dyn2Static(node):
                         ret.append((child.end_byte, child.start_byte))
         return ret
 
-def cvt_Array2Pointer(node):
+def cvt_Array2Pointer(node: Node) -> List[Tuple[int, Union[int, str]]]:
     dim = get_array_dim(node)
     if dim == 1:
         # a[i] -> *(a + i)
@@ -255,7 +257,7 @@ def cvt_Array2Pointer(node):
         except:
             return
 
-def cvt_Pointer2Array(node, code):
+def cvt_Pointer2Array(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     dim = get_pointer_dim(node)
     try:
         if dim == 1:

@@ -1,6 +1,8 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
-def get_for_info(node):
+def get_for_info(node: Node) -> List[Union[Node, None]]:
     # 提取for循环的abc信息，for(a;b;c)以及后面接的语句
     i, abc = 0, [None, None, None, None]
     for child in node.children:
@@ -14,7 +16,7 @@ def get_for_info(node):
             abc[3] = child
     return abc
 
-def get_indent(start_byte, code):
+def get_indent(start_byte: int, code: str) -> int:
     indent = 0
     i = start_byte
     while i >= 0 and i < len(code) and code[i] != '\n':
@@ -25,7 +27,7 @@ def get_indent(start_byte, code):
         i -= 1
     return indent
 
-def contain_id(node, contain):
+def contain_id(node: Node, contain: set) -> None:
     # 返回node节点子树中的所有变量名
     if node.child_by_field_name('index'):   # a[i] < 2中的index：i
         contain.add(text(node.child_by_field_name('index')))
@@ -37,11 +39,11 @@ def contain_id(node, contain):
         contain_id(n, contain)
 
 '''==========================匹配========================'''
-def rec_For(node):
+def rec_For(node: Node) -> bool:
     if node.type == 'for_statement':
         return True
 
-def rec_loop(node):
+def rec_loop(node: Node) -> bool:
     if node.type in ['while_statement', 'do_statement', 'for_statement']:
         parent = node.parent
         while parent:
@@ -50,95 +52,95 @@ def rec_loop(node):
             parent = parent.parent
         return True
 
-def match_While(node):
+def match_While(node: Node) -> bool:
     if rec_loop(node):
         if node.type == 'while_statement' and node.parent.type != 'labeled_statement':    # 标签语句不处理
             return True
 
-def match_DoWhile(node):
+def match_DoWhile(node: Node) -> bool:
     if rec_loop(node):
         if node.type == 'do_statement' and node.parent.type != 'labeled_statement':    # 标签语句不处理
             return True
 
-def match_ForOBC(node):
+def match_ForOBC(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and abc[1] and abc[2]:
             return True
 
-def match_ForAOC(node):
+def match_ForAOC(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and not abc[1] and abc[2]:
             return True
 
-def match_ForABO(node):
+def match_ForABO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and abc[1] and not abc[2]:
             return True
 
-def match_ForAOO(node):
+def match_ForAOO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and not abc[1] and not abc[2]:
             return True
 
-def match_ForOBO(node):
+def match_ForOBO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and abc[1] and not abc[2]:
             return True
 
-def match_ForOOC(node):
+def match_ForOOC(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and not abc[1] and abc[2]:
             return True
 
-def match_ForOOO(node):
+def match_ForOOO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and not abc[1] and not abc[2]:
             return True
             
-def match_ForAOC(node):
+def match_ForAOC(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and not abc[1] and abc[2]:
             return True
 
-def match_ForABO(node):
+def match_ForABO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and abc[1] and not abc[2]:
             return True
 
-def match_ForAOO(node):
+def match_ForAOO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if abc[0] and not abc[1] and not abc[2]:
             return True
 
-def match_ForOBO(node):
+def match_ForOBO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and abc[1] and not abc[2]:
             return True
 
-def match_ForOOC(node):
+def match_ForOOC(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and not abc[1] and abc[2]:
             return True
 
-def match_ForOOO(node):
+def match_ForOOO(node: Node) -> bool:
     if rec_For(node):
         abc = get_for_info(node)
         if not abc[0] and not abc[1] and not abc[2]:
             return True
 
-def rec_IfForWhileNoBracket(node):
+def rec_IfForWhileNoBracket(node: Node) -> bool:
     #for(); while(); if();
     if node.type in ['while_statement', 'if_statement', 'for_statement', 'else_clause']:
         for child in node.children:
@@ -147,7 +149,7 @@ def rec_IfForWhileNoBracket(node):
         return True
 
 '''==========================替换========================'''
-def cvt_AddIfForWhileBracket(node, code):
+def cvt_AddIfForWhileBracket(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # 在单行If、For、While添加大括号
     statement_node = None
     for each in node.children:
@@ -165,7 +167,7 @@ def cvt_AddIfForWhileBracket(node, code):
         return [(statement_node.prev_sibling.end_byte, f" {{"), 
                 (statement_node.end_byte, f"\n{indent * ' '}}}")]
 
-def cvt_OBC(node, code):
+def cvt_OBC(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # a for(;b;c)
     add_bracket = []
     if rec_IfForWhileNoBracket(node):
@@ -183,7 +185,7 @@ def cvt_OBC(node, code):
                 return add_bracket + [(abc[0].end_byte - 1, abc[0].start_byte),
                         (node.start_byte, text(abc[0]) + f'\n{indent * " "}')]
 
-def cvt_AOC(node, code):
+def cvt_AOC(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # for(a;;c) if b break
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -204,7 +206,7 @@ def cvt_AOC(node, code):
                 ret.extend(add_bracket)
             return ret
                 
-def cvt_ABO(node, code):
+def cvt_ABO(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # for(a;b;) c
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -227,7 +229,7 @@ def cvt_ABO(node, code):
                 ret.extend(add_bracket)
             return ret
 
-def cvt_AOO(node, code):
+def cvt_AOO(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # for(a;;) if b break c
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -258,7 +260,7 @@ def cvt_AOO(node, code):
             ret.extend(add_bracket)
         return ret
 
-def cvt_OBO(node, code):
+def cvt_OBO(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # a for(;b;) c
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -289,7 +291,7 @@ def cvt_OBO(node, code):
             ret.extend(add_bracket)
         return ret
 
-def cvt_OOC(node, code):
+def cvt_OOC(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # a for(;;c) if b break
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -320,7 +322,7 @@ def cvt_OOC(node, code):
             ret.extend(add_bracket)
         return ret
 
-def cvt_OOO(node, code):
+def cvt_OOO(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # a for(;;;) if break b c
     ret, add_bracket = [], []
     if rec_IfForWhileNoBracket(node):
@@ -358,7 +360,7 @@ def cvt_OOO(node, code):
         ret.extend(add_bracket)
     return ret
 
-def cvt_for(node, code):
+def cvt_for(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     if node.type == 'while_statement':
         # for(a;b;c)
         a = b = c = None
@@ -428,7 +430,7 @@ def cvt_for(node, code):
         return
     return ret
 
-def cvt_while(node, code):
+def cvt_while(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:
     # a while(b) c
     add_parent_bracket = False
     if rec_IfForWhileNoBracket(node.parent):
@@ -468,7 +470,7 @@ def cvt_while(node, code):
             new_str = f'{{{new_str}\n{(indent - 4)* " "}}}'
         return [(node.end_byte, node.start_byte), (node.start_byte, new_str)]
 
-def cvt_do_while(node, code):   # tx
+def cvt_do_while(node: Node, code: str) -> List[Tuple[int, Union[int, str]]]:   # tx
     add_parent_bracket = False
     if rec_IfForWhileNoBracket(node.parent):
         add_parent_bracket = True

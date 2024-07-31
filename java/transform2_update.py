@@ -1,7 +1,9 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
 '''==========================匹配========================'''
-def rec_LeftUpdate(node):
+def rec_LeftUpdate(node: Node) -> bool:
     # ++i or --i
     if node.type in ['update_expression']:
         if node.parent.type not in ['array_access', 'assignment_expression']:
@@ -9,7 +11,7 @@ def rec_LeftUpdate(node):
             if node.children[1].type == 'identifier':
                 return True
 
-def rec_RightUpdate(node):
+def rec_RightUpdate(node: Node) -> bool:
     # i++ or i--
     if node.type in ['update_expression']:
         if node.parent.type not in ['array_access', 'assignment_expression']:
@@ -17,14 +19,14 @@ def rec_RightUpdate(node):
             if node.children[0].type == 'identifier':
                 return True
 
-def rec_AugmentedCrement(node):
+def rec_AugmentedCrement(node: Node) -> bool:
     # a += 1 or a -= 1
     if node.type == 'assignment_expression':
         if node.child_count >= 2 and text(node.children[1]) in ['+=', '-=']:
             if text(node.children[2]) == '1':
                 return True
 
-def rec_Assignment(node):
+def rec_Assignment(node: Node) -> bool:
     # a = a ? 1
     if node.type == 'assignment_expression':
         left_param = node.children[0].text
@@ -35,20 +37,20 @@ def rec_Assignment(node):
                     if text(node.children[2].children[2]) == '1':
                         return left_param == right_first_param
 
-def rec_ToLeft(node):
+def rec_ToLeft(node: Node) -> bool:
     return rec_RightUpdate(node) or rec_AugmentedCrement(node) or rec_Assignment(node)
 
-def rec_ToRight(node):
+def rec_ToRight(node: Node) -> bool:
     return rec_LeftUpdate(node) or rec_AugmentedCrement(node) or rec_Assignment(node)
 
-def rec_ToAugment(node):
+def rec_ToAugment(node: Node) -> bool:
     return rec_LeftUpdate(node) or rec_RightUpdate(node) or rec_Assignment(node)
 
-def rec_ToAssignment(node):
+def rec_ToAssignment(node: Node) -> bool:
     return rec_LeftUpdate(node) or rec_RightUpdate(node) or rec_AugmentedCrement(node)
 
 '''==========================替换========================'''
-def cvt_ToRight(node):
+def cvt_ToRight(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # i++
     if rec_LeftUpdate(node):
         temp_node = node.children[0]
@@ -65,7 +67,7 @@ def cvt_ToRight(node):
         return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{left_param}{op*2}")]
 
-def cvt_ToLeft(node):
+def cvt_ToLeft(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # ++i
     if rec_RightUpdate(node):
         temp_node = node.children[1]
@@ -82,7 +84,7 @@ def cvt_ToLeft(node):
         return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{op*2}{left_param}")]
 
-def cvt_ToAugment(node):
+def cvt_ToAugment(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # i += 1
     if rec_LeftUpdate(node):
         op = text(node.children[0])[0]
@@ -100,7 +102,7 @@ def cvt_ToAugment(node):
         return [(node.end_byte, node.start_byte),
                 (node.start_byte, f"{param} {op}= 1")]
 
-def cvt_ToAssignment(node):
+def cvt_ToAssignment(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # i = i + 1
     if rec_LeftUpdate(node):
         op = text(node.children[0])[0]

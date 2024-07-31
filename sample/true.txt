@@ -1,0 +1,40 @@
+(1 > 0) == ((2 > 1) and (3 > 2))
+len([x for x in range(1) if x == 0]) == 1
+(True or False) and (not False)
+all(x in {1, 2, 3} for x in [1, 2] if x < 3)
+(True if 1+1 == 2 else False) and (False if 2*2 != 4 else True)
+[x for x in range(10) if x % 2 == 0 and x != 0] != []
+{"a": 1, "b": 2}.get("a", None) == 1
+any(i == x for i, x in enumerate([3,9,3,8,4,8]))
+((True if 1+1==2 else False) or (False if 2*2!=4 else True)) and True
+(1 > 0 and 2 < 3) or (4 == 4 and 5 != 3)  
+all(x > 0 for x in [1, 2, 3, 4])
+not (False and True)
+len(set([1, 2, 2, 3])) == 3
+bool(sum([1, 2, 3, 4]))
+all(type(x) is int for x in [1, 2, 3, 4])
+(1 == 1) or (2 == 2 and 3 != 3)
+all(x.isalpha() for x in "hello")
+any(x > 2 for x in [1, 2, 3, 4])
+min(5, 6, 7) <= max(3, 4, 5)
+sum(x for x in range(5)) > 0
+all(x in "hello" for x in "hell")
+not (None is True)
+("a" in "apple") and ("b" not in "orange")
+all(isinstance(x, (int, float)) for x in [1, 2.0, 3])
+bool(filter(lambda x: x % 2 == 0, [1, 2, 3, 4]))
+any(x.isdigit() for x in "123abc")
+all(x <= 5 for x in range(6))
+sum(range(1, 6)) == 15
+('True' if "python" in "python programming" else 'False').lower() == "true"
+all(chr(x).isalpha() for x in range(ord('a'), ord('e')+1))
+any(x * 2 == x + x for x in range(10))
+bool(dict(a=1, b=2))
+len("hello world".split()) == 2
+all(x > y for x, y in zip([1, 2, 3], [0, 1, 2]))
+set([1, 2, 3]) == {1, 2, 3}
+not (True in [False, False, False])
+any(x.endswith('o') for x in ['hello', 'world', 'python'])
+all(x + 1 > x for x in range(10))
+len(list(filter(None, [None, 1, None, 2]))) == 2
+not all(x.isupper() or x.islower() for x in "HeLLo WoRLd")

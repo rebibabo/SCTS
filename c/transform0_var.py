@@ -1,48 +1,44 @@
 from utils import text
 import inflection
+from tree_sitter import Node
+from typing import Dict, List, Tuple, Union
 
 c_keywords = ['auto', 'double', 'int', 'struct', 'break', 'else', 'long', 'switch', 'case', 'enum',
             'register', 'typedef', 'char', 'extern', 'return', 'union', 'const', 'float', 'short',
             'unsigned', 'continue', 'for', 'signed', 'void', 'default', 'goto', 'sizeof', 'volatile',
             'do', 'if', 'while', 'static', 'uint32_t', 'uint64_t']
 
-id_type = {}
+id_type: Dict[str, str] = {}
 
-def find_for_statement_identifier(u, arg, st):  # tx
-    if u.type == 'for_statement': arg['in'] = True
-    if arg['in'] and u.type == 'identifier': st.add(u.id)
-    for v in u.children: find_for_statement_identifier(v, arg, st)
-    if u.type == 'for_statement': arg['in'] = False
-
-def is_all_lowercase(name):     # aaabbb
+def is_all_lowercase(name: str) -> bool:     # aaabbb
     return name.lower() == name and \
         not is_underscore(name) and \
         not is_init_underscore(name) and \
-        not is_init_dollar(name) 
+        not is_init_dollar(name)
 
-def is_all_uppercase(name):     # AAABBB
+def is_all_uppercase(name: str) -> bool:     # AAABBB
     return name.upper() == name
 
-def is_camel_case(name):        # aaaBbb
+def is_camel_case(name: str) -> bool:        # aaaBbb
     if is_all_lowercase(name): return False
     if not name[0].isalpha(): return False
     return inflection.camelize(name, uppercase_first_letter=False) == name
 
-def is_initcap(name):           # AaaBbb
+def is_initcap(name: str) -> bool:           # AaaBbb
     if is_all_uppercase(name): return False
     if not name[0].isalpha(): return False
     return inflection.camelize(name, uppercase_first_letter=True) == name
 
-def is_underscore(name):        # aaa_bbb
+def is_underscore(name: str) -> bool:        # aaa_bbb
     return name[0] != '_' and '_' in name.strip('_')
 
-def is_init_underscore(name):   # _aaa
+def is_init_underscore(name: str) -> bool:   # _aaa
     return name[0] == '_' and name[1:].strip('_') != ''
 
-def is_init_dollar(name):       # $$$aaa
+def is_init_dollar(name: str) -> bool:       # $$$aaa
     return name[0] == '$' and name[1:].strip('$') != ''
 
-def sub_token(name):            # 将token变成subtoken
+def sub_token(name: str) -> List[str]:            # 将token变成subtoken
     subtoken = []
     if len(name) == 0:
         return subtoken
@@ -72,7 +68,7 @@ def sub_token(name):            # 将token变成subtoken
         return [name]
     return subtoken
 
-def get_id(node):   # 遍历node，获取id
+def get_id(node: str) -> str:   # 遍历node，获取id
     id = []
     def traverse(node):
         if node.type == 'identifier':
@@ -82,7 +78,7 @@ def get_id(node):   # 遍历node，获取id
     traverse(node)
     return id[0] if len(id) > 0 else ''
 
-def get_id_type(root, id_type): # 遍历根节点，获取所有id的类型
+def get_id_type(root: Node, id_type: Dict[str, str]): # 遍历根节点，获取所有id的类型
     for u in root.children:
         if u.type == 'declaration':
             type = text(u.child_by_field_name('type'))
@@ -101,11 +97,7 @@ def get_id_type(root, id_type): # 遍历根节点，获取所有id的类型
         get_id_type(u, id_type)
 
 '''==========================匹配========================'''
-def rec_identifier(node):   # tx
-    # global for_statement_identifiers_ids
-    # if not node.parent: # 如果是root节点
-    #     for_statement_identifiers_ids.clear()
-    #     find_for_statement_identifier(node, {'in': False}, for_statement_identifiers_ids)
+def rec_identifier(node: Node) -> bool:   # tx
     global id_type
     if not node.parent: # 如果是root节点
         id_type.clear()
@@ -119,51 +111,51 @@ def rec_identifier(node):   # tx
     if len(text(node)) == 0: return False
     return True
 
-def match_camel(node):
+def match_camel(node: Node) -> bool:
     if rec_identifier(node):
         if is_camel_case(text(node)):
             return True
-    
-def match_initcap(node):
+
+def match_initcap(node: Node) -> bool:
     if rec_identifier(node):
         if is_initcap(text(node)):
             return True
 
-def match_underscore(node):
+def match_underscore(node: Node) -> bool:
     if rec_identifier(node):
         if is_underscore(text(node)):
             return True
 
-def match_init_underscore(node):
+def match_init_underscore(node: Node) -> bool:
     if rec_identifier(node):
         if is_init_underscore(text(node)):
             return True
 
-def match_init_dollar(node):
+def match_init_dollar(node: Node) -> bool:
     if rec_identifier(node):
         if is_init_dollar(text(node)):
             return True
 
-def match_upper(node):
+def match_upper(node: Node) -> bool:
     if rec_identifier(node):
         if is_all_uppercase(text(node)):
             return True
 
-def match_lower(node):
+def match_lower(node: Node) -> bool:
     if rec_identifier(node):
         if is_all_lowercase(text(node)):
             return True
 
-def match_hungarian(node):
+def match_hungarian(node: Node) -> bool:
     if rec_identifier(node):
         for type in ['int', 'char', 'float', 'double', 'long', 'short']:
             if text(node).startswith(type):
                 return True
-        
+
 '''==========================替换========================'''
-def cvt_camel(node):            # aaaBbb
+def cvt_camel(node: Node) -> List[Tuple[int, Union[int, str]]]:            # aaaBbb
     id = text(node)
-    if is_initcap(id) or is_underscore(id) or is_init_underscore(id) or is_init_dollar(id): 
+    if is_initcap(id) or is_underscore(id) or is_init_underscore(id) or is_init_dollar(id):
         subtoken = sub_token(id)
         if len(subtoken) == 0:
             return
@@ -174,7 +166,7 @@ def cvt_camel(node):            # aaaBbb
         if new_id not in c_keywords and not new_id.isdigit() and new_id != id:
             return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_initcap(node):          # AaaBbb
+def cvt_initcap(node: Node) -> List[Tuple[int, Union[int, str]]]:          # AaaBbb
     id = text(node)
     if is_initcap or is_underscore(id) or is_init_underscore(id) or is_init_dollar(id):
         subtoken = sub_token(id)
@@ -184,8 +176,8 @@ def cvt_initcap(node):          # AaaBbb
                 new_id += t[0].upper() + t[1:]
             if new_id not in c_keywords and not new_id.isdigit() and new_id != id:
                 return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
-        
-def cvt_underscore(node):       # aaa_bbb
+
+def cvt_underscore(node: Node) -> List[Tuple[int, Union[int, str]]]:       # aaa_bbb
     id = text(node)
     if is_initcap(id) or is_underscore(id) or is_init_underscore(id) or is_init_dollar(id):
         subtoken = sub_token(id)
@@ -193,31 +185,31 @@ def cvt_underscore(node):       # aaa_bbb
         if new_id not in c_keywords and not new_id.isdigit() and new_id != id:
             return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_init_underscore(node):  # _aaa_bbb
+def cvt_init_underscore(node: Node) -> List[Tuple[int, Union[int, str]]]:  # _aaa_bbb
     id = text(node)
     new_id = '_' + id
     if not new_id.isdigit() and new_id != id:
         return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_init_dollar(node):      # $aaa_bbb
+def cvt_init_dollar(node: Node) -> List[Tuple[int, Union[int, str]]]:      # $aaa_bbb
     id = text(node)
     new_id = '$' + id
     if not new_id.isdigit() and new_id != id:
         return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_upper(node):            # AAABBB
+def cvt_upper(node: Node) -> List[Tuple[int, Union[int, str]]]:            # AAABBB
     id = text(node)
     new_id = id.upper()
     if not new_id.isdigit() and new_id != id:
         return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_lower(node):            # aaabbb
+def cvt_lower(node: Node) -> List[Tuple[int, Union[int, str]]]:            # aaabbb
     id = text(node)
     new_id = id.lower()
     if new_id not in c_keywords and not new_id.isdigit() and new_id != id:
         return [(node.end_byte, node.start_byte), (node.start_byte, new_id)]
 
-def cvt_hungarian(node):        # typeId tx
+def cvt_hungarian(node: Node) -> List[Tuple[int, Union[int, str]]]:        # typeId tx
     id = text(node)
     type = id_type[id]
     type = type.replace('const ', '').replace('static ', '')

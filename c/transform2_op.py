@@ -1,6 +1,8 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
-def get_parent_type(node):
+def get_parent_type(node: Node):
     parents = []
     while node.parent:
         parents.append(node.parent.type)
@@ -8,13 +10,13 @@ def get_parent_type(node):
     return parents
 
 '''==========================匹配========================'''
-def rec_AugmentedAssignment(node):
+def rec_AugmentedAssignment(node: Node) -> bool:
     # a ?= b
     if node.type == 'assignment_expression':
         if node.child_count >= 2 and text(node.children[1]) in ['+=', '-=', '*=', '/=', '%=', '<<=', '>>=']:
             return True
 
-def rec_Assignment(node):
+def rec_Assignment(node: Node) -> bool:
     # a = a ? b
     if node.type == 'assignment_expression':
         left_param = node.children[0].text
@@ -23,7 +25,7 @@ def rec_Assignment(node):
             if text(node.children[2].children[1]) in ['+', '-', '*', '/', '%', '<<', '>>']:
                 return left_param == right_first_param
 
-def rec_CmpRightConst(node):
+def rec_CmpRightConst(node: Node) -> bool:
     # a op const
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['<', '>', '<=', '>=', '==', '!='] \
@@ -31,42 +33,42 @@ def rec_CmpRightConst(node):
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def rec_CmpOptBigger(node):
+def rec_CmpOptBigger(node: Node) -> bool:
     # a > b
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['>', '>=']:
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def rec_CmpOptSmaller(node):
+def rec_CmpOptSmaller(node: Node) -> bool:
     # a <= b
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['<', '<=']:
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def rec_Cmp(node):  # tx
+def rec_Cmp(node: Node) -> bool:  # tx
     # a == b
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['>', '>=', '<', '<=', '==', '!=']:
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def match_Equal(node):
+def match_Equal(node: Node) -> bool:
     # a == b
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['==']:
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def match_NotEqual(node):
+def match_NotEqual(node: Node) -> bool:
     # a != b
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['!=']:
         if 'binary_expression' not in get_parent_type(node):
             return True
 
-def match_LeftConst(node):
+def match_LeftConst(node: Node) -> bool:
     # const op a
     if node.type == 'binary_expression' \
             and text(node.children[1]) in ['<', '>', '<=', '>=', '==', '!='] \
@@ -75,7 +77,7 @@ def match_LeftConst(node):
             return True
             
 '''==========================替换========================'''
-def cvt_AugmentedAssignment2Assignment(node):
+def cvt_AugmentedAssignment2Assignment(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a ?= b -> a = a ? b
     if rec_AugmentedAssignment(node):
         if len(node.children) == 3:
@@ -84,7 +86,7 @@ def cvt_AugmentedAssignment2Assignment(node):
             return [(node.end_byte, node.start_byte),
                     (node.start_byte, new_str)] 
 
-def cvt_Assignment2AugmentedAssignment(node):
+def cvt_Assignment2AugmentedAssignment(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a = a ? b -> a ?= b
     a = text(node.children[0])
     op = text(node.children[2].children[1])
@@ -95,7 +97,7 @@ def cvt_Assignment2AugmentedAssignment(node):
     return [(node.end_byte, node.start_byte),
             (node.start_byte, new_str)] 
 
-def cvt_RightConst2LeftConst(node):
+def cvt_RightConst2LeftConst(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a op const -> const po a
     if len(node.children) == 3:
         [a, op, const] = [text(x) for x in node.children]
@@ -103,7 +105,7 @@ def cvt_RightConst2LeftConst(node):
         return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{const} {reverse_op_dict[op]} {a}')]
 
-def cvt_Bigger2Smaller(node):
+def cvt_Bigger2Smaller(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a > b -> b < a
     if len(node.children) == 3:
         [a, op, b] = [text(x) for x in node.children]
@@ -111,7 +113,7 @@ def cvt_Bigger2Smaller(node):
         return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{b} {reverse_op_dict[op]} {a}')]
 
-def cvt_Smaller2Bigger(node):
+def cvt_Smaller2Bigger(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a <= b -> b >= a
     if len(node.children) == 3:
         [a, op, b] = [text(x) for x in node.children]
@@ -119,7 +121,7 @@ def cvt_Smaller2Bigger(node):
         return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'{b} {reverse_op_dict[op]} {a}')]
 
-def cvt_Equal(node):    # tx
+def cvt_Equal(node: Node) -> List[Tuple[int, Union[int, str]]]:    # tx
     [a, op, b] = [text(x) for x in node.children]
     if op in ['==']: return
     if op in ['<=']:
@@ -143,7 +145,7 @@ def cvt_Equal(node):    # tx
         return [(node.end_byte, node.start_byte), 
                 (node.start_byte, f'!({a} == {b})')]
 
-def cvt_NotEqual(node):    # tx
+def cvt_NotEqual(node: Node) -> List[Tuple[int, Union[int, str]]]:    # tx
     [a, op, b] = [text(x) for x in node.children]
     if op in ['!=']: return
     if op in ['<=']:

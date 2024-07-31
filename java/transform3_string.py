@@ -1,10 +1,12 @@
 from utils import text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
 String_ids = set()
 
-def get_id(node):   # 遍历node，获取id
+def get_id(node: Node) -> str:   # 遍历node，获取id
     id = []
-    def traverse(node):
+    def traverse(node: Node):
         if node.type == 'identifier':
             id.append(text(node))
         for child in node.children:
@@ -24,12 +26,12 @@ def get_id_type(root, id_type): # 遍历根节点，获取所有id的类型
         get_id_type(u, id_type)
 
 '''==========================匹配========================'''
-def rec_String(node):
+def rec_String(node: Node) -> bool:
     # "string"
     if node.type == 'string_literal' and not rec_NewString(node.parent.parent):
         return True
 
-def rec_NewString(node):
+def rec_NewString(node: Node) -> bool:
     # new String("string")
     if node.type == 'object_creation_expression':
         if node.children[0].text== b'new' and node.children[1].text == b'String':
@@ -37,13 +39,13 @@ def rec_NewString(node):
             if arguments and arguments.children[1].type == 'string_literal':
                 return True
 
-def rec_StringConcat(node):
+def rec_StringConcat(node: Node) -> bool:
     # a.concat(b).concat(c)
     if node.type == 'method_invocation' and node.parent.type != 'method_invocation':
         if node.child_count > 2 and node.children[2].text == b'concat':
             return True
 
-def match_StringAdd(node):
+def match_StringAdd(node: Node) -> bool:
     global String_ids
     if not node.parent:
         String_ids.clear()
@@ -59,16 +61,16 @@ def match_StringAdd(node):
         return True
 
 '''==========================替换========================'''
-def cvt_ToNewString(node):
+def cvt_ToNewString(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # "string" -> new String("string")
     return [(node.start_byte, 'new String('), (node.end_byte, ')')]
 
-def cvt_ToString(node):
+def cvt_ToString(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # new String("string") -> "string"
     return [(node.children[2].children[1].start_byte, node.start_byte),
             (node.children[2].children[2].end_byte, node.children[2].children[1].end_byte)]
 
-def cvt_Concat2Add(node):
+def cvt_Concat2Add(node: Node) -> List[Tuple[int, Union[int, str]]]:
     # a.concat(b).concat(c) -> a + b + c
     string_list = []
     temp_node = node

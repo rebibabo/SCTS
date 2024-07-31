@@ -20,9 +20,11 @@ def main():
         for file in files:
             if name in file:
                 return
-    with open(f'{language}/transform{index}_{name}.py', 'w') as f:
+    with open(f'{language}/transform{index}_{name}.py', 'w', encoding='utf-8') as f:
         f.write(
 '''from utils import replace_from_blob, traverse_rec_func, text
+from tree_sitter import Node
+from typing import List, Tuple, Union
 
 \'''==========================匹配========================\'''
 
