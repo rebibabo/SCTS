@@ -129,12 +129,15 @@ class SCTS:
         succ = format_code.replace(' ','').replace('\n', '') != code.replace(' ','').replace('\n', '')
         return code, succ
 
-    def see_tree(self, code:str) -> None:
+    def see_tree(self, 
+        code:str, 
+        view:bool = True
+    ) -> None:
         tree = self.parser.parse(bytes(code, 'utf8'))
         root_node = tree.root_node
         dot = Digraph(comment='AST Tree')
         create_ast_tree(dot, root_node)
-        dot.render('ast_tree')
+        dot.render('ast_tree', view=view)
 
     def tokenize(self, code: str) -> List[str]:
         # 给定代码，返回token列表
